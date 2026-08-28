@@ -44,7 +44,7 @@
         header {
             background: linear-gradient(180deg, #3d2213 0%, #201108 100%);
             border-bottom: 2px solid #140a05;
-            padding: 6px 12px;
+            padding: 6px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -63,11 +63,11 @@
 
         .stats-wood-board {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             background: #140a05;
             border: 1px solid var(--wood-main);
             border-radius: 6px;
-            padding: 2px 8px;
+            padding: 2px 6px;
         }
 
         .stat-item {
@@ -88,17 +88,23 @@
             color: var(--gold-text);
         }
 
+        .header-buttons {
+            display: flex;
+            gap: 6px;
+        }
+
         .btn-wood {
             background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-main) 100%);
             border: 1px solid #190c05;
             color: #fff2db;
-            padding: 4px 10px;
+            padding: 5px 9px;
             font-size: 0.75rem;
             font-family: inherit;
             font-weight: bold;
             border-radius: 4px;
             cursor: pointer;
         }
+        .btn-wood:hover { filter: brightness(1.15); }
 
         /* FAIXA INDICADORA DE TURNO */
         #turn-banner {
@@ -140,9 +146,7 @@
             cursor: grab;
         }
 
-        #viewport:active {
-            cursor: grabbing;
-        }
+        #viewport:active { cursor: grabbing; }
 
         #board-container {
             position: absolute;
@@ -221,9 +225,119 @@
             touch-action: auto;
         }
 
-        .btn-map:active {
-            transform: scale(0.92);
-            background: #3d2112;
+        .btn-map:active { transform: scale(0.92); background: #3d2112; }
+
+        /* PAINEL LATERAL DE JOGADORES (DRAWER) */
+        .drawer-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.6);
+            backdrop-filter: blur(2px);
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .drawer-backdrop.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .players-drawer {
+            position: fixed;
+            top: 0;
+            right: -320px;
+            width: 280px;
+            height: 100vh;
+            background: linear-gradient(180deg, #2c160b 0%, #150904 100%);
+            border-left: 3px solid var(--wood-main);
+            box-shadow: -5px 0 25px rgba(0,0,0,0.8);
+            z-index: 95;
+            transition: right 0.3s cubic-bezier(0.25, 1, 0.5, 1);
+            display: flex;
+            flex-direction: column;
+            padding: 16px;
+        }
+
+        .players-drawer.open {
+            right: 0;
+        }
+
+        .drawer-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 2px solid var(--wood-main);
+            padding-bottom: 10px;
+            margin-bottom: 12px;
+        }
+
+        .drawer-header h3 {
+            font-size: 1rem;
+            color: var(--gold-bright);
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+
+        .btn-close-drawer {
+            background: none;
+            border: none;
+            color: var(--gold-text);
+            font-size: 1.3rem;
+            cursor: pointer;
+            padding: 4px;
+        }
+
+        .players-list {
+            list-style: none;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            overflow-y: auto;
+            flex: 1;
+        }
+
+        .player-item {
+            background: #1e0e06;
+            border: 2px solid #4a2814;
+            border-radius: 8px;
+            padding: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .player-item.turn-active {
+            border-color: #2a9d8f;
+            background: #112d26;
+            box-shadow: 0 0 10px rgba(42, 157, 143, 0.4);
+        }
+
+        .player-info {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .player-name {
+            font-size: 0.9rem;
+            font-weight: bold;
+            color: #fff;
+        }
+
+        .player-role {
+            font-size: 0.65rem;
+            color: var(--gold-bright);
+        }
+
+        .badge-turn {
+            background: #2a9d8f;
+            color: #fff;
+            font-size: 0.65rem;
+            font-weight: bold;
+            padding: 3px 6px;
+            border-radius: 4px;
         }
 
         /* PAINEL INFERIOR: MÃO DE CARTAS */
@@ -362,11 +476,26 @@
                 <span id="ui-room-code" class="stat-value" style="font-size:0.85rem;">ClariFaz8</span>
             </div>
         </div>
-        <button class="btn-wood" onclick="App.openLobby()">Mudar Sala</button>
+        <div class="header-buttons">
+            <button class="btn-wood" onclick="App.togglePlayersDrawer()">👥 (<span id="ui-header-players-count">1</span>)</button>
+            <button class="btn-wood" onclick="App.openLobby()">Mudar Sala</button>
+        </div>
     </header>
 
     <!-- FAIXA DE TURNO -->
     <div id="turn-banner" class="waiting-turn">Conectando à mesa...</div>
+
+    <!-- PAINEL LATERAL DE JOGADORES (GAVETA / DRAWER) -->
+    <div id="drawer-backdrop" class="drawer-backdrop" onclick="App.togglePlayersDrawer()"></div>
+    <div id="players-drawer" class="players-drawer">
+        <div class="drawer-header">
+            <h3>👥 Xerifes na Mesa</h3>
+            <button class="btn-close-drawer" onclick="App.togglePlayersDrawer()">✖</button>
+        </div>
+        <ul id="players-list" class="players-list">
+            <!-- Renderizado dinamicamente -->
+        </ul>
+    </div>
 
     <!-- VIEWPORT COM CÂMERA DE ARRASTO E ZOOM -->
     <main id="viewport">
@@ -402,7 +531,7 @@
             <input id="inp-room" class="input-box" type="text" value="ClariFaz8" maxlength="15">
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO ÚNICO:</label>
-            <input id="inp-player" class="input-box" type="text" value="Princesa da familia Lira" maxlength="12">
+            <input id="inp-player" class="input-box" type="text" value="Princesa da familia Lira" maxlength="25">
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SAÍDAS DA CELA INICIAL:</label>
             <div style="display:flex; justify-content:center; gap:10px; margin:8px 0 16px 0;">
@@ -423,16 +552,10 @@
 
 <script>
 /**
- * SISTEMA DE CÂMERA LIVRE: PAN & ZOOM (TOUCH & MOUSE)
+ * SISTEMA DE CÂMERA LIVRE: PAN & ZOOM
  */
 const PanZoom = {
-    x: 0,
-    y: 0,
-    scale: 1,
-    isDragging: false,
-    startX: 0,
-    startY: 0,
-    hasMoved: false,
+    x: 0, y: 0, scale: 1, isDragging: false, startX: 0, startY: 0, hasMoved: false,
 
     init() {
         const vp = document.getElementById('viewport');
@@ -455,14 +578,11 @@ const PanZoom = {
             this.applyTransform();
         });
 
-        window.addEventListener('pointerup', () => {
-            this.isDragging = false;
-        });
+        window.addEventListener('pointerup', () => { this.isDragging = false; });
 
         vp.addEventListener('wheel', (e) => {
             e.preventDefault();
-            const delta = e.deltaY < 0 ? 0.1 : -0.1;
-            this.zoom(delta);
+            this.zoom(e.deltaY < 0 ? 0.1 : -0.1);
         }, { passive: false });
     },
 
@@ -472,15 +592,12 @@ const PanZoom = {
     },
 
     recenter() {
-        this.x = 0;
-        this.y = 0;
-        this.scale = 1;
+        this.x = 0; this.y = 0; this.scale = 1;
         this.applyTransform();
     },
 
     applyTransform() {
-        const container = document.getElementById('board-container');
-        container.style.transform = `translate(${this.x}px, ${this.y}px) scale(${this.scale})`;
+        document.getElementById('board-container').style.transform = `translate(${this.x}px, ${this.y}px) scale(${this.scale})`;
     }
 };
 
@@ -506,10 +623,8 @@ const Sound = {
             osc.frequency.exponentialRampToValueAtTime(40, this.ctx.currentTime + 0.08);
             gain.gain.setValueAtTime(0.2, this.ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.08);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.08);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.08);
         } catch(e) {}
     },
     playTurnNotice() {
@@ -523,10 +638,8 @@ const Sound = {
             osc.frequency.exponentialRampToValueAtTime(880, this.ctx.currentTime + 0.15);
             gain.gain.setValueAtTime(0.1, this.ctx.currentTime);
             gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.15);
-            osc.connect(gain);
-            gain.connect(this.ctx.destination);
-            osc.start();
-            osc.stop(this.ctx.currentTime + 0.15);
+            osc.connect(gain); gain.connect(this.ctx.destination);
+            osc.start(); osc.stop(this.ctx.currentTime + 0.15);
         } catch(e) {}
     },
     playWin() {
@@ -540,10 +653,8 @@ const Sound = {
                     osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
                     gain.gain.setValueAtTime(0.15, this.ctx.currentTime);
                     gain.gain.exponentialRampToValueAtTime(0.001, this.ctx.currentTime + 0.3);
-                    osc.connect(gain);
-                    gain.connect(this.ctx.destination);
-                    osc.start();
-                    osc.stop(this.ctx.currentTime + 0.3);
+                    osc.connect(gain); gain.connect(this.ctx.destination);
+                    osc.start(); osc.stop(this.ctx.currentTime + 0.3);
                 } catch(e) {}
             }, i * 110);
         });
@@ -551,19 +662,14 @@ const Sound = {
 };
 
 /**
- * CATÁLOGO DE CARTAS (INCLUINDO AS CARTAS CENTRAIS MULTI-BLOCO)
+ * CATÁLOGO DE CARTAS (CELAS MULTI-BLOCO + TÚNEIS)
  */
 const CardCatalog = {
-    // 5 SAÍDAS (2 BLOCOS): Esquerda (3 saídas) + Direita (2 saídas) = 5 Saídas
     JAIL_5_L: { id: 'JAIL_5_L', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '5_left' },
     JAIL_5_R: { id: 'JAIL_5_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '5_right' },
-
-    // 6 SAÍDAS (3 BLOCOS): Esquerda (2) + Centro (2) + Direita (2) = 6 Saídas
     JAIL_6_L: { id: 'JAIL_6_L', connections: { top: true, right: true, bottom: true, left: false }, isJail: true, jailType: '6_left' },
     JAIL_6_M: { id: 'JAIL_6_M', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '6_mid' },
     JAIL_6_R: { id: 'JAIL_6_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '6_right' },
-
-    // CARTAS NORMAIS DE TÚNEL
     STRAIGHT:  { id: 'STRAIGHT',  connections: { top: true, right: false, bottom: true, left: false } },
     CURVE:     { id: 'CURVE',     connections: { top: true, right: true, bottom: false, left: false } },
     T_JUNCT:   { id: 'T_JUNCT',   connections: { top: true, right: true, bottom: false, left: true } },
@@ -587,7 +693,7 @@ class Card {
 }
 
 /**
- * RENDERIZADOR SVG DAS CARTAS COM A ESTÉTICA OFICIAL DO BANDIDO
+ * RENDERIZADOR SVG DAS CARTAS COM A ESTÉTICA DO BANDIDO
  */
 const SVGRenderer = {
     render(card) {
@@ -595,7 +701,6 @@ const SVGRenderer = {
         const cx = 32, cy = 32, w = 18;
         let paths = '';
 
-        // Corredores escuros de túneis escavados
         if (conns.top) {
             paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
             paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
@@ -615,7 +720,6 @@ const SVGRenderer = {
 
         paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
 
-        // Cartas especiais de cela e barricada
         if (card.template.isJail) {
             const jType = card.template.jailType;
             if (jType === '5_left' || jType === '6_mid') {
@@ -645,11 +749,9 @@ const SVGRenderer = {
             `;
         }
 
-        // Fundo com ondas e terra escavada estilo Bandido
         return `
             <svg class="card-svg" viewBox="0 0 64 64">
                 <rect width="64" height="64" rx="6" fill="#8a4513" stroke="#3d2112" stroke-width="1.5"/>
-                <!-- Camadas onduladas de terra -->
                 <path d="M 0 12 Q 32 6 64 12 L 64 24 Q 32 18 0 24 Z" fill="#b86524" opacity="0.4"/>
                 <path d="M 0 38 Q 32 32 64 38 L 64 50 Q 32 44 0 50 Z" fill="#6e3713" opacity="0.5"/>
                 ${paths}
@@ -785,6 +887,48 @@ const App = {
         this.cardsPlaced = 0;
     },
 
+    togglePlayersDrawer() {
+        const drawer = document.getElementById('players-drawer');
+        const backdrop = document.getElementById('drawer-backdrop');
+        const isOpen = drawer.classList.contains('open');
+
+        if (isOpen) {
+            drawer.classList.remove('open');
+            backdrop.classList.remove('active');
+        } else {
+            this.renderPlayersDrawer();
+            drawer.classList.add('open');
+            backdrop.classList.add('active');
+        }
+    },
+
+    renderPlayersDrawer() {
+        const listEl = document.getElementById('players-list');
+        listEl.innerHTML = '';
+
+        if (this.players.length === 0) {
+            listEl.innerHTML = '<li style="color:#aaa; font-size:0.85rem; padding:10px;">Nenhum jogador na mesa.</li>';
+            return;
+        }
+
+        this.players.forEach((p, index) => {
+            const isTurn = (index === (this.currentTurnIndex % this.players.length));
+            const isHost = (index === 0);
+            const isMe = (p.id === this.myPlayerId);
+
+            const li = document.createElement('li');
+            li.className = `player-item ${isTurn ? 'turn-active' : ''}`;
+            li.innerHTML = `
+                <div class="player-info">
+                    <span class="player-name">${isHost ? '👑 ' : ''}${p.name} ${isMe ? '(Você)' : ''}</span>
+                    <span class="player-role">${isHost ? 'Xerife Líder' : 'Companheiro de Patrulha'}</span>
+                </div>
+                ${isTurn ? '<span class="badge-turn">Sua Vez</span>' : ''}
+            `;
+            listEl.appendChild(li);
+        });
+    },
+
     joinRoom(difficulty) {
         const roomInput = document.getElementById('inp-room').value.trim() || 'ClariFaz8';
         const nameInput = document.getElementById('inp-player').value.trim();
@@ -805,15 +949,11 @@ const App = {
         document.getElementById('lobby-modal').classList.add('hidden');
 
         this.init();
-
-        // GERAÇÃO DA CELA MULTI-BLOCO COM 5 OU 6 SAÍDAS REAIS
         if (difficulty === 6) {
-            // 3 BLOCOS (3 em cima + 3 embaixo = 6 saídas)
             this.board.place(-1, 0, new Card(CardCatalog.JAIL_6_L, 0));
             this.board.place(0, 0, new Card(CardCatalog.JAIL_6_M, 0));
             this.board.place(1, 0, new Card(CardCatalog.JAIL_6_R, 0));
         } else {
-            // 2 BLOCOS (3 na esquerda + 2 na direita = 5 saídas)
             this.board.place(0, 0, new Card(CardCatalog.JAIL_5_L, 0));
             this.board.place(1, 0, new Card(CardCatalog.JAIL_5_R, 0));
         }
@@ -884,6 +1024,15 @@ const App = {
             if (msg.targetId === this.myPlayerId) {
                 alert(`O nome "${msg.takenName}" já está sendo usado nesta sala! Por favor, escolha outro nome ou apelido.`);
                 this.openLobby();
+            }
+        } else if (msg.type === 'PLAYER_LEFT') {
+            const leavingIndex = this.players.findIndex(p => p.id === msg.id);
+            if (leavingIndex !== -1) {
+                this.players.splice(leavingIndex, 1);
+                if (this.currentTurnIndex >= this.players.length) {
+                    this.currentTurnIndex = 0;
+                }
+                this.updateUI();
             }
         } else if (msg.type === 'SYNC_FULL_STATE') {
             this.players = msg.players;
@@ -1028,6 +1177,8 @@ const App = {
         const gridEl = document.getElementById('board-grid');
         gridEl.innerHTML = '';
 
+        if (!this.board) return;
+
         const pad = 1;
         const minX = this.board.minX - pad;
         const maxX = this.board.maxX + pad;
@@ -1066,6 +1217,8 @@ const App = {
     renderHand() {
         const container = document.getElementById('hand-slots');
         container.innerHTML = '';
+        if (!this.deck) return;
+
         const myTurn = this.isMyTurn();
 
         for (let i = 0; i < 3; i++) {
@@ -1085,8 +1238,11 @@ const App = {
     },
 
     updateUI() {
+        if (!this.board || !this.deck) return;
+
         document.getElementById('ui-open-exits').innerText = this.board.getOpenExitsCount();
         document.getElementById('ui-deck-count').innerText = this.deck.cards.length;
+        document.getElementById('ui-header-players-count').innerText = this.players.length;
 
         const banner = document.getElementById('turn-banner');
         const activeName = this.getCurrentTurnPlayerName();
@@ -1112,6 +1268,11 @@ const App = {
             btnRot.setAttribute('disabled', 'true');
             txtRot.innerText = '(0°)';
         }
+
+        // Atualiza a lista na gaveta caso ela esteja aberta
+        if (document.getElementById('players-drawer').classList.contains('open')) {
+            this.renderPlayersDrawer();
+        }
     },
 
     renderAll() {
@@ -1120,9 +1281,34 @@ const App = {
     },
 
     openLobby() {
-        if (this.mqttClient) {
-            this.mqttClient.end();
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.sendNetMessage('PLAYER_LEFT', {
+                id: this.myPlayerId,
+                name: this.playerName
+            });
+            try { this.mqttClient.end(); } catch(e) {}
+            this.mqttClient = null;
         }
+
+        // Fecha a gaveta se estiver aberta
+        document.getElementById('players-drawer').classList.remove('open');
+        document.getElementById('drawer-backdrop').classList.remove('active');
+
+        this.board = null;
+        this.deck = null;
+        this.players = [];
+        this.selectedIdx = null;
+        this.rotation = 0;
+        this.cardsPlaced = 0;
+
+        document.getElementById('board-grid').innerHTML = '';
+        document.getElementById('hand-slots').innerHTML = '';
+        document.getElementById('ui-open-exits').innerText = '-';
+        document.getElementById('ui-deck-count').innerText = '-';
+        document.getElementById('ui-header-players-count').innerText = '0';
+        document.getElementById('turn-banner').className = 'waiting-turn';
+        document.getElementById('turn-banner').innerText = 'Conectando à mesa...';
+
         document.getElementById('result-modal').classList.add('hidden');
         document.getElementById('lobby-modal').classList.remove('hidden');
     }
