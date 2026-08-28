@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Policia</title>
+    <title>Policia - Fuga do Cânion</title>
     <!-- Biblioteca MQTT moderna para conexão em tempo real -->
     <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
     <style>
@@ -402,7 +402,7 @@
             <input id="inp-room" class="input-box" type="text" value="ClariFaz8" maxlength="15">
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO ÚNICO:</label>
-            <input id="inp-player" class="input-box" type="text" value="Seu nome" maxlength="12">
+            <input id="inp-player" class="input-box" type="text" value="Princesa da familia Lira" maxlength="12">
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SAÍDAS DA CELA INICIAL:</label>
             <div style="display:flex; justify-content:center; gap:10px; margin:8px 0 16px 0;">
@@ -551,11 +551,19 @@ const Sound = {
 };
 
 /**
- * CATÁLOGO DE CARTAS
+ * CATÁLOGO DE CARTAS (INCLUINDO AS CARTAS CENTRAIS MULTI-BLOCO)
  */
 const CardCatalog = {
-    JAIL_5WAY: { id: 'JAIL_5WAY', connections: { top: true, right: true, bottom: true, left: true }, isJail: true },
-    JAIL_6WAY: { id: 'JAIL_6WAY', connections: { top: true, right: true, bottom: true, left: true }, isJail: true },
+    // 5 SAÍDAS (2 BLOCOS): Esquerda (3 saídas) + Direita (2 saídas) = 5 Saídas
+    JAIL_5_L: { id: 'JAIL_5_L', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '5_left' },
+    JAIL_5_R: { id: 'JAIL_5_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '5_right' },
+
+    // 6 SAÍDAS (3 BLOCOS): Esquerda (2) + Centro (2) + Direita (2) = 6 Saídas
+    JAIL_6_L: { id: 'JAIL_6_L', connections: { top: true, right: true, bottom: true, left: false }, isJail: true, jailType: '6_left' },
+    JAIL_6_M: { id: 'JAIL_6_M', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '6_mid' },
+    JAIL_6_R: { id: 'JAIL_6_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '6_right' },
+
+    // CARTAS NORMAIS DE TÚNEL
     STRAIGHT:  { id: 'STRAIGHT',  connections: { top: true, right: false, bottom: true, left: false } },
     CURVE:     { id: 'CURVE',     connections: { top: true, right: true, bottom: false, left: false } },
     T_JUNCT:   { id: 'T_JUNCT',   connections: { top: true, right: true, bottom: false, left: true } },
@@ -579,7 +587,7 @@ class Card {
 }
 
 /**
- * RENDERIZADOR SVG DAS CARTAS
+ * RENDERIZADOR SVG DAS CARTAS COM A ESTÉTICA OFICIAL DO BANDIDO
  */
 const SVGRenderer = {
     render(card) {
@@ -587,37 +595,47 @@ const SVGRenderer = {
         const cx = 32, cy = 32, w = 18;
         let paths = '';
 
+        // Corredores escuros de túneis escavados
         if (conns.top) {
-            paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#542e17"/>`;
-            paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="4" fill="#874a23" stroke="#2b1408" stroke-width="0.8"/>`;
+            paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
+            paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
         if (conns.bottom) {
-            paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#542e17"/>`;
-            paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="4" fill="#874a23" stroke="#2b1408" stroke-width="0.8"/>`;
+            paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#211007"/>`;
+            paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
         if (conns.left) {
-            paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#542e17"/>`;
-            paths += `<rect x="4" y="${cy - w/2 - 2}" width="4" height="${w + 4}" fill="#874a23" stroke="#2b1408" stroke-width="0.8"/>`;
+            paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+            paths += `<rect x="4" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
         if (conns.right) {
-            paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#542e17"/>`;
-            paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="4" height="${w + 4}" fill="#874a23" stroke="#2b1408" stroke-width="0.8"/>`;
+            paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+            paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
 
-        paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#542e17"/>`;
+        paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
 
+        // Cartas especiais de cela e barricada
         if (card.template.isJail) {
-            paths += `
-                <rect x="14" y="14" width="36" height="36" fill="#140904" stroke="#874a23" stroke-width="2" rx="4"/>
-                <circle cx="32" cy="30" r="8" fill="#d4a373"/>
-                <rect x="25" y="27" width="14" height="5" fill="#1a1a1a" rx="1"/>
-                <ellipse cx="32" cy="23" rx="11" ry="3" fill="#111"/>
-                <rect x="26" y="17" width="12" height="6" fill="#111" rx="1"/>
-                <line x1="20" y1="14" x2="20" y2="50" stroke="#7f8c8d" stroke-width="2"/>
-                <line x1="28" y1="14" x2="28" y2="50" stroke="#7f8c8d" stroke-width="2"/>
-                <line x1="36" y1="14" x2="36" y2="50" stroke="#7f8c8d" stroke-width="2"/>
-                <line x1="44" y1="14" x2="44" y2="50" stroke="#7f8c8d" stroke-width="2"/>
-            `;
+            const jType = card.template.jailType;
+            if (jType === '5_left' || jType === '6_mid') {
+                paths += `
+                    <rect x="14" y="14" width="36" height="36" fill="#140904" stroke="#874a23" stroke-width="2" rx="4"/>
+                    <circle cx="32" cy="30" r="8" fill="#d4a373"/>
+                    <rect x="25" y="27" width="14" height="5" fill="#1a1a1a" rx="1"/>
+                    <ellipse cx="32" cy="23" rx="11" ry="3" fill="#111"/>
+                    <rect x="26" y="17" width="12" height="6" fill="#111" rx="1"/>
+                    <line x1="20" y1="14" x2="20" y2="50" stroke="#7f8c8d" stroke-width="2"/>
+                    <line x1="28" y1="14" x2="28" y2="50" stroke="#7f8c8d" stroke-width="2"/>
+                    <line x1="36" y1="14" x2="36" y2="50" stroke="#7f8c8d" stroke-width="2"/>
+                    <line x1="44" y1="14" x2="44" y2="50" stroke="#7f8c8d" stroke-width="2"/>
+                `;
+            } else {
+                paths += `
+                    <rect x="18" y="24" width="28" height="16" fill="#542e17" stroke="#874a23" stroke-width="1.5" rx="3"/>
+                    <text x="32" y="35" fill="#e9c46a" font-size="8" font-weight="bold" text-anchor="middle" font-family="Georgia">CELA</text>
+                `;
+            }
         } else if (card.template.isBarricade) {
             paths += `
                 <circle cx="${cx}" cy="${cy}" r="11" fill="#30180c" stroke="#542e17" stroke-width="1.5"/>
@@ -627,9 +645,13 @@ const SVGRenderer = {
             `;
         }
 
+        // Fundo com ondas e terra escavada estilo Bandido
         return `
             <svg class="card-svg" viewBox="0 0 64 64">
-                <rect width="64" height="64" rx="6" fill="#241309" stroke="#3d2112" stroke-width="1.5"/>
+                <rect width="64" height="64" rx="6" fill="#8a4513" stroke="#3d2112" stroke-width="1.5"/>
+                <!-- Camadas onduladas de terra -->
+                <path d="M 0 12 Q 32 6 64 12 L 64 24 Q 32 18 0 24 Z" fill="#b86524" opacity="0.4"/>
+                <path d="M 0 38 Q 32 32 64 38 L 64 50 Q 32 44 0 50 Z" fill="#6e3713" opacity="0.5"/>
                 ${paths}
             </svg>
         `;
@@ -783,8 +805,18 @@ const App = {
         document.getElementById('lobby-modal').classList.add('hidden');
 
         this.init();
-        const jailType = difficulty === 6 ? CardCatalog.JAIL_6WAY : CardCatalog.JAIL_5WAY;
-        this.board.place(0, 0, new Card(jailType, 0));
+
+        // GERAÇÃO DA CELA MULTI-BLOCO COM 5 OU 6 SAÍDAS REAIS
+        if (difficulty === 6) {
+            // 3 BLOCOS (3 em cima + 3 embaixo = 6 saídas)
+            this.board.place(-1, 0, new Card(CardCatalog.JAIL_6_L, 0));
+            this.board.place(0, 0, new Card(CardCatalog.JAIL_6_M, 0));
+            this.board.place(1, 0, new Card(CardCatalog.JAIL_6_R, 0));
+        } else {
+            // 2 BLOCOS (3 na esquerda + 2 na direita = 5 saídas)
+            this.board.place(0, 0, new Card(CardCatalog.JAIL_5_L, 0));
+            this.board.place(1, 0, new Card(CardCatalog.JAIL_5_R, 0));
+        }
 
         this.connectNetwork();
         this.updateUI();
@@ -832,11 +864,9 @@ const App = {
 
     handleNetworkMessage(msg) {
         if (msg.type === 'PLAYER_ENTERED') {
-            // Verifica se o novo jogador está tentando usar o mesmo nome de alguém já na sala
             const nameConflict = this.players.some(p => p.id !== msg.id && p.name.trim().toLowerCase() === msg.name.trim().toLowerCase());
             
             if (nameConflict) {
-                // Notifica o novo jogador que o nome já está ocupado
                 this.sendNetMessage('NAME_TAKEN', {
                     targetId: msg.id,
                     takenName: msg.name
@@ -851,7 +881,6 @@ const App = {
             this.sendFullStateSync();
             this.updateUI();
         } else if (msg.type === 'NAME_TAKEN') {
-            // Se o alerta de nome duplicado for direcionado a este jogador
             if (msg.targetId === this.myPlayerId) {
                 alert(`O nome "${msg.takenName}" já está sendo usado nesta sala! Por favor, escolha outro nome ou apelido.`);
                 this.openLobby();
