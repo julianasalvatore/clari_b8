@@ -2,7 +2,7 @@
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Policia - Fuga do Cânion</title>
     <!-- Biblioteca MQTT moderna para conexão em tempo real -->
     <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
@@ -17,7 +17,7 @@
             --gold-text: #e9c46a;
             --turn-green: #2a9d8f;
             --turn-wait: #a24b3b;
-            --cell-size: 68px;
+            --cell-size: 64px;
         }
 
         * {
@@ -28,46 +28,48 @@
             -webkit-user-select: none;
         }
 
-        body {
-            font-family: 'Georgia', serif;
+        html, body {
+            height: 100%;
+            height: 100dvh;
+            height: -webkit-fill-available;
+            width: 100vw;
+            overflow: hidden;
+            position: fixed;
             background-color: var(--bg-desert);
             color: #f1ebd9;
             display: flex;
             flex-direction: column;
-            height: 100vh;
-            width: 100vw;
-            overflow: hidden;
-            position: fixed;
+            font-family: 'Georgia', serif;
         }
 
-        /* CABEÇALHO */
+        /* CABEÇALHO COMPACTO */
         header {
             background: linear-gradient(180deg, #3d2213 0%, #201108 100%);
             border-bottom: 2px solid #140a05;
-            padding: 6px 12px;
+            padding: 4px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.8);
+            box-shadow: 0 3px 10px rgba(0,0,0,0.8);
             z-index: 30;
             flex-shrink: 0;
         }
 
         .header-title h1 {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             color: var(--gold-text);
             text-transform: uppercase;
-            letter-spacing: 1px;
+            letter-spacing: 0.8px;
             text-shadow: 1px 1px 0 #000;
         }
 
         .stats-wood-board {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             background: #140a05;
             border: 1px solid var(--wood-main);
-            border-radius: 6px;
-            padding: 2px 8px;
+            border-radius: 5px;
+            padding: 2px 6px;
         }
 
         .stat-item {
@@ -77,28 +79,28 @@
         }
 
         .stat-label {
-            font-size: 0.55rem;
+            font-size: 0.5rem;
             color: #a8947e;
             font-weight: bold;
         }
 
         .stat-value {
-            font-size: 0.95rem;
+            font-size: 0.85rem;
             font-weight: bold;
             color: var(--gold-text);
         }
 
         .header-buttons {
             display: flex;
-            gap: 6px;
+            gap: 4px;
         }
 
         .btn-wood {
             background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-main) 100%);
             border: 1px solid #190c05;
             color: #fff2db;
-            padding: 5px 10px;
-            font-size: 0.75rem;
+            padding: 4px 8px;
+            font-size: 0.7rem;
             font-family: inherit;
             font-weight: bold;
             border-radius: 4px;
@@ -108,9 +110,10 @@
 
         /* FAIXA INDICADORA DE TURNO */
         #turn-banner {
-            padding: 6px 10px;
+            padding: 4px 8px;
             text-align: center;
-            font-size: 0.85rem;
+            font-size: 0.78rem;
+            line-height: 1.2;
             font-weight: bold;
             border-bottom: 2px solid #140a05;
             transition: all 0.3s ease;
@@ -138,7 +141,8 @@
 
         /* VIEWPORT E CÂMERA LIVRE */
         #viewport {
-            flex: 1;
+            flex: 1 1 auto;
+            min-height: 0;
             overflow: hidden;
             position: relative;
             background: radial-gradient(circle at center, #24130a 0%, #0d0603 100%);
@@ -165,7 +169,7 @@
         #board-grid {
             display: grid;
             gap: 4px;
-            padding: 16px;
+            padding: 14px;
             background: rgba(0, 0, 0, 0.45);
             border: 3px solid #331a0d;
             border-radius: 12px;
@@ -200,22 +204,22 @@
         /* CONTROLES FLUTUANTES DO MAPA */
         .map-controls {
             position: absolute;
-            right: 14px;
-            bottom: 14px;
+            right: 10px;
+            bottom: 10px;
             display: flex;
             flex-direction: column;
-            gap: 8px;
+            gap: 6px;
             z-index: 25;
         }
 
         .btn-map {
-            width: 40px;
-            height: 40px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #2b180d;
             border: 2px solid var(--gold-bright);
             color: var(--gold-text);
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: bold;
             display: flex;
             align-items: center;
@@ -260,21 +264,19 @@
             padding: 16px;
         }
 
-        .players-drawer.open {
-            right: 0;
-        }
+        .players-drawer.open { right: 0; }
 
         .drawer-header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             border-bottom: 2px solid var(--wood-main);
-            padding-bottom: 10px;
+            padding-bottom: 8px;
             margin-bottom: 12px;
         }
 
         .drawer-header h3 {
-            font-size: 1rem;
+            font-size: 0.95rem;
             color: var(--gold-bright);
             letter-spacing: 1px;
             text-transform: uppercase;
@@ -284,7 +286,7 @@
             background: none;
             border: none;
             color: var(--gold-text);
-            font-size: 1.3rem;
+            font-size: 1.2rem;
             cursor: pointer;
             padding: 4px;
         }
@@ -302,7 +304,7 @@
             background: #1e0e06;
             border: 2px solid #4a2814;
             border-radius: 8px;
-            padding: 10px;
+            padding: 8px 10px;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -321,7 +323,7 @@
         }
 
         .player-name {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             font-weight: bold;
             color: #fff;
         }
@@ -336,7 +338,7 @@
             color: #fff;
             font-size: 0.65rem;
             font-weight: bold;
-            padding: 3px 6px;
+            padding: 2px 6px;
             border-radius: 4px;
         }
 
@@ -344,7 +346,7 @@
         footer {
             background: linear-gradient(0deg, #180e07 0%, #29160c 100%);
             border-top: 2px solid #140a05;
-            padding: 6px 10px;
+            padding: 4px 8px calc(6px + env(safe-area-inset-bottom, 0px)) 8px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -356,14 +358,14 @@
         .hand-container {
             display: flex;
             justify-content: center;
-            gap: 10px;
+            gap: 8px;
             width: 100%;
-            max-width: 400px;
+            max-width: 380px;
         }
 
         .hand-card {
-            width: 72px;
-            height: 72px;
+            width: 66px;
+            height: 66px;
             background: #201108;
             border: 2px solid #542e17;
             border-radius: 8px;
@@ -373,12 +375,13 @@
             cursor: pointer;
             box-shadow: 0 4px 10px rgba(0,0,0,0.7);
             transition: transform 0.15s, border-color 0.15s;
+            flex-shrink: 0;
         }
 
         .hand-card.selected {
             border-color: var(--gold-bright);
-            transform: translateY(-5px) scale(1.06);
-            box-shadow: 0 0 15px rgba(244, 162, 97, 0.6);
+            transform: translateY(-4px) scale(1.05);
+            box-shadow: 0 0 14px rgba(244, 162, 97, 0.7);
             background: #3d2112;
         }
 
@@ -392,11 +395,11 @@
             background: linear-gradient(180deg, #b06530 0%, #6e3c1d 100%);
             color: #fff;
             border: 2px solid #190c05;
-            padding: 5px 14px;
-            font-size: 0.8rem;
+            padding: 3px 12px;
+            font-size: 0.75rem;
             font-weight: bold;
             font-family: inherit;
-            border-radius: 6px;
+            border-radius: 5px;
             cursor: pointer;
         }
 
@@ -413,7 +416,7 @@
             pointer-events: none;
         }
 
-        /* MODAIS E TELAS DE LOBBY */
+        /* MODAIS */
         .modal {
             position: fixed;
             inset: 0;
@@ -432,8 +435,8 @@
             border: 3px solid var(--wood-light);
             border-radius: 12px;
             width: 92%;
-            max-width: 440px;
-            padding: 20px;
+            max-width: 420px;
+            padding: 18px;
             text-align: center;
             box-shadow: 0 0 35px rgba(0,0,0,0.9);
             max-height: 90vh;
@@ -442,12 +445,12 @@
 
         .input-box {
             width: 100%;
-            padding: 9px;
-            margin: 6px 0 12px 0;
+            padding: 8px;
+            margin: 6px 0 10px 0;
             background: #140904;
             border: 2px solid var(--wood-main);
             color: var(--gold-text);
-            font-size: 0.95rem;
+            font-size: 0.9rem;
             font-family: inherit;
             font-weight: bold;
             border-radius: 6px;
@@ -460,7 +463,7 @@
             background: #190b04;
             border: 1px solid var(--wood-main);
             border-radius: 6px;
-            padding: 8px 12px;
+            padding: 6px 10px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -486,7 +489,7 @@
             </div>
             <div class="stat-item">
                 <span class="stat-label">SALA</span>
-                <span id="ui-room-code" class="stat-value" style="font-size:0.85rem;">ClariFaz8</span>
+                <span id="ui-room-code" class="stat-value" style="font-size:0.75rem;">ClariFaz8</span>
             </div>
         </div>
         <div class="header-buttons">
@@ -498,19 +501,17 @@
     <!-- FAIXA DE TURNO -->
     <div id="turn-banner" class="waiting-turn">Carregando...</div>
 
-    <!-- PAINEL LATERAL DE JOGADORES (GAVETA / DRAWER) -->
+    <!-- PAINEL LATERAL DE JOGADORES (DRAWER) -->
     <div id="drawer-backdrop" class="drawer-backdrop" onclick="App.togglePlayersDrawer()"></div>
     <div id="players-drawer" class="players-drawer">
         <div class="drawer-header">
             <h3>👥 Xerifes na Mesa</h3>
             <button class="btn-close-drawer" onclick="App.togglePlayersDrawer()">✖</button>
         </div>
-        <ul id="players-list" class="players-list">
-            <!-- Renderizado dinamicamente -->
-        </ul>
+        <ul id="players-list" class="players-list"></ul>
     </div>
 
-    <!-- VIEWPORT COM CÂMERA DE ARRASTO E ZOOM -->
+    <!-- VIEWPORT COM CÂMERA LIVRE -->
     <main id="viewport">
         <div id="board-container">
             <div id="board-grid"></div>
@@ -525,11 +526,9 @@
 
     <!-- MÃO E CONTROLES -->
     <footer>
-        <div style="display:flex; gap:10px; align-items:center;">
-            <button id="btn-rotate" class="btn-rotate" onclick="App.rotateSelected()" disabled>
-                ↻ Girar <span id="ui-rotation">(0°)</span>
-            </button>
-        </div>
+        <button id="btn-rotate" class="btn-rotate" onclick="App.rotateSelected()" disabled>
+            ↻ Girar <span id="ui-rotation">(0°)</span>
+        </button>
         <div id="hand-slots" class="hand-container"></div>
     </footer>
 
@@ -566,7 +565,7 @@
         </div>
     </div>
 
-    <!-- MODAL 3: LOBBY MULTIPLAYER COM GERAÇÃO CLARIFAZ -->
+    <!-- MODAL 3: LOBBY MULTIPLAYER -->
     <div id="multi-modal" class="modal hidden">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:6px;">Salas Online</h2>
@@ -581,8 +580,8 @@
                     <button class="btn-wood" onclick="App.generateRandomRoomCode()" title="Gerar novo código">🎲</button>
                 </div>
                 <div style="display:flex; gap:6px; margin-top:8px;">
-                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(5)">5 Saídas (Fácil)</button>
-                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(6)">6 Saídas (Difícil)</button>
+                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(5)">Criar (5 Saídas)</button>
+                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(6)">Criar (6 Saídas)</button>
                 </div>
             </div>
 
@@ -730,7 +729,7 @@ const Sound = {
 };
 
 /**
- * CATÁLOGO DE CARTAS (CELAS MULTI-BLOCO + TÚNEIS)
+ * CATÁLOGO DE CARTAS (CELAS MULTI-BLOCO + FORMATOS GEOMÉTRICOS)
  */
 const CardCatalog = {
     JAIL_5_L: { id: 'JAIL_5_L', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '5_left' },
@@ -738,11 +737,15 @@ const CardCatalog = {
     JAIL_6_L: { id: 'JAIL_6_L', connections: { top: true, right: true, bottom: true, left: false }, isJail: true, jailType: '6_left' },
     JAIL_6_M: { id: 'JAIL_6_M', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '6_mid' },
     JAIL_6_R: { id: 'JAIL_6_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '6_right' },
-    STRAIGHT:  { id: 'STRAIGHT',  connections: { top: true, right: false, bottom: true, left: false } },
-    CURVE:     { id: 'CURVE',     connections: { top: true, right: true, bottom: false, left: false } },
-    T_JUNCT:   { id: 'T_JUNCT',   connections: { top: true, right: true, bottom: false, left: true } },
-    CROSS:     { id: 'CROSS',     connections: { top: true, right: true, bottom: true, left: true } },
-    BARRICADE: { id: 'BARRICADE', connections: { top: false, right: false, bottom: true, left: false }, isBarricade: true }
+
+    CURVE_L:   { id: 'CURVE_L',   shape: 'L', connections: { top: true, right: true, bottom: false, left: false } },
+    U_LOOP:    { id: 'U_LOOP',    shape: 'U', connections: { top: true, right: false, bottom: false, left: true } },
+    Z_ZAG:     { id: 'Z_ZAG',     shape: 'Z', connections: { top: true, right: false, bottom: true, left: false } },
+    STRAIGHT:  { id: 'STRAIGHT',  shape: 'I', connections: { top: true, right: false, bottom: true, left: false } },
+    T_JUNCT:   { id: 'T_JUNCT',   shape: 'T', connections: { top: true, right: true, bottom: false, left: true } },
+    F_BRANCH:  { id: 'F_BRANCH',  shape: 'F', connections: { top: true, right: true, bottom: true, left: false } },
+    CROSS:     { id: 'CROSS',     shape: 'X', connections: { top: true, right: true, bottom: true, left: true } },
+    BARRICADE: { id: 'BARRICADE', shape: 'B', connections: { top: false, right: false, bottom: true, left: false }, isBarricade: true }
 };
 
 class Card {
@@ -761,32 +764,48 @@ class Card {
 }
 
 /**
- * RENDERIZADOR SVG DAS CARTAS COM A ESTÉTICA DO BANDIDO
+ * RENDERIZADOR SVG DAS CARTAS
  */
 const SVGRenderer = {
     render(card) {
         const conns = card.getConnections();
+        const shape = card.template.shape;
         const cx = 32, cy = 32, w = 18;
         let paths = '';
 
-        if (conns.top) {
-            paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
-            paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+        if (shape === 'Z') {
+            paths += `
+                <path d="M 23,0 L 41,0 L 41,20 L 23,44 L 23,64 L 41,64 L 41,40 L 59,16 L 59,0" fill="#211007"/>
+                <line x1="20" y1="12" x2="44" y2="12" stroke="#874a23" stroke-width="3"/>
+                <line x1="20" y1="52" x2="44" y2="52" stroke="#874a23" stroke-width="3"/>
+                <line x1="28" y1="30" x2="52" y2="30" stroke="#874a23" stroke-width="3"/>
+            `;
+        } else if (shape === 'U') {
+            paths += `
+                <path d="M 23,0 L 41,0 C 41,48 48,41 0,41 L 0,23 C 30,23 23,30 23,0 Z" fill="#211007"/>
+                <rect x="21" y="6" width="22" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>
+                <rect x="6" y="21" width="3.5" height="22" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>
+                <circle cx="32" cy="32" r="6" fill="#874a23" opacity="0.3"/>
+            `;
+        } else {
+            if (conns.top) {
+                paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
+                paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+            }
+            if (conns.bottom) {
+                paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#211007"/>`;
+                paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+            }
+            if (conns.left) {
+                paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+                paths += `<rect x="4" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+            }
+            if (conns.right) {
+                paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+                paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+            }
+            paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
         }
-        if (conns.bottom) {
-            paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#211007"/>`;
-            paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-        }
-        if (conns.left) {
-            paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
-            paths += `<rect x="4" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-        }
-        if (conns.right) {
-            paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
-            paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-        }
-
-        paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
 
         if (card.template.isJail) {
             const jType = card.template.jailType;
@@ -898,10 +917,13 @@ class Deck {
     }
     init() {
         const pool = [
-            { t: CardCatalog.CURVE, count: 24 },
-            { t: CardCatalog.STRAIGHT, count: 16 },
-            { t: CardCatalog.T_JUNCT, count: 15 },
-            { t: CardCatalog.CROSS, count: 8 },
+            { t: CardCatalog.CURVE_L,  count: 14 },
+            { t: CardCatalog.U_LOOP,   count: 10 },
+            { t: CardCatalog.Z_ZAG,    count: 8 },
+            { t: CardCatalog.STRAIGHT, count: 10 },
+            { t: CardCatalog.T_JUNCT,  count: 8 },
+            { t: CardCatalog.F_BRANCH, count: 7 },
+            { t: CardCatalog.CROSS,    count: 6 },
             { t: CardCatalog.BARRICADE, count: 6 }
         ];
         this.cards = [];
@@ -932,7 +954,7 @@ class Deck {
 }
 
 /**
- * CONTROLADOR PRINCIPAL COM LOBBY, SALAS, HOST, APROVAÇÃO E TIMEOUT
+ * CONTROLADOR PRINCIPAL COM SUPORTE A SOLO, MULTIPLAYER E HOST
  */
 const App = {
     mode: 'SOLO',
@@ -941,7 +963,7 @@ const App = {
     aiDeck: null,
     selectedIdx: null,
     rotation: 0,
-    roomCode: '',
+    roomCode: 'ClariFaz8',
     playerName: '',
     myPlayerId: '',
     players: [],
@@ -1026,6 +1048,22 @@ const App = {
             try { this.mqttClient.end(); } catch(e) {}
             this.mqttClient = null;
         }
+
+        this.board = null;
+        this.deck = null;
+        this.players = [];
+        this.selectedIdx = null;
+        this.rotation = 0;
+        this.cardsPlaced = 0;
+
+        document.getElementById('board-grid').innerHTML = '';
+        document.getElementById('hand-slots').innerHTML = '';
+        document.getElementById('ui-open-exits').innerText = '-';
+        document.getElementById('ui-deck-count').innerText = '-';
+        document.getElementById('ui-header-players-count').innerText = '0';
+        document.getElementById('turn-banner').className = 'waiting-turn';
+        document.getElementById('turn-banner').innerText = 'Carregando...';
+
         this.hideAllModals();
         document.getElementById('players-drawer').classList.remove('open');
         document.getElementById('drawer-backdrop').classList.remove('active');
@@ -1065,7 +1103,7 @@ const App = {
         this.currentTurnIndex = 0;
 
         document.getElementById('ui-game-mode-title').innerText = 'Policia (Solo)';
-        document.getElementById('ui-room-code').innerText = 'Solo vs Robô';
+        document.getElementById('ui-room-code').innerText = 'Solo';
         this.hideAllModals();
 
         this.init();
@@ -1396,6 +1434,7 @@ const App = {
             this.renderAll();
             this.checkGameEnd();
 
+            // Ativação da jogada do robô no Modo Solo
             if (this.mode === 'SOLO' && this.players[this.currentTurnIndex].id === 'p_bot') {
                 setTimeout(() => this.playAITurn(), 1000);
             }
@@ -1403,9 +1442,13 @@ const App = {
     },
 
     playAITurn() {
-        const margin = 1;
-        const minX = this.board.minX - margin, maxX = this.board.maxX + margin;
-        const minY = this.board.minY - margin, maxY = this.board.maxY + margin;
+        if (!this.board || !this.aiDeck) return;
+
+        const pad = 1;
+        const minX = this.board.minX - pad;
+        const maxX = this.board.maxX + pad;
+        const minY = this.board.minY - pad;
+        const maxY = this.board.maxY + pad;
 
         for (let handIdx = 0; handIdx < this.aiDeck.hand.length; handIdx++) {
             const card = this.aiDeck.hand[handIdx];
@@ -1428,8 +1471,11 @@ const App = {
                 }
             }
         }
+
+        // Se o robô não tiver nenhuma jogada possível, descarta e passa a vez
         this.aiDeck.use(0);
         this.currentTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
+        this.renderAll();
         this.updateUI();
     },
 
