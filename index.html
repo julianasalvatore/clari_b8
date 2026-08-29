@@ -40,11 +40,11 @@
             position: fixed;
         }
 
-        /* CABEÇALHO RESPONSIVO */
+        /* CABEÇALHO */
         header {
             background: linear-gradient(180deg, #3d2213 0%, #201108 100%);
             border-bottom: 2px solid #140a05;
-            padding: 6px 10px;
+            padding: 6px 12px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -63,11 +63,11 @@
 
         .stats-wood-board {
             display: flex;
-            gap: 6px;
+            gap: 8px;
             background: #140a05;
             border: 1px solid var(--wood-main);
             border-radius: 6px;
-            padding: 2px 6px;
+            padding: 2px 8px;
         }
 
         .stat-item {
@@ -97,7 +97,7 @@
             background: linear-gradient(180deg, var(--wood-light) 0%, var(--wood-main) 100%);
             border: 1px solid #190c05;
             color: #fff2db;
-            padding: 5px 9px;
+            padding: 5px 10px;
             font-size: 0.75rem;
             font-family: inherit;
             font-weight: bold;
@@ -136,7 +136,7 @@
             to { background-color: #2d6a4f; }
         }
 
-        /* VIEWPORT E CÂMERA DE ARRASTO */
+        /* VIEWPORT E CÂMERA LIVRE */
         #viewport {
             flex: 1;
             overflow: hidden;
@@ -413,7 +413,7 @@
             pointer-events: none;
         }
 
-        /* MODAIS */
+        /* MODAIS E TELAS DE LOBBY */
         .modal {
             position: fixed;
             inset: 0;
@@ -431,21 +431,23 @@
             background: linear-gradient(180deg, #3d2112 0%, #1f1007 100%);
             border: 3px solid var(--wood-light);
             border-radius: 12px;
-            width: 90%;
-            max-width: 400px;
+            width: 92%;
+            max-width: 440px;
             padding: 20px;
             text-align: center;
             box-shadow: 0 0 35px rgba(0,0,0,0.9);
+            max-height: 90vh;
+            overflow-y: auto;
         }
 
         .input-box {
             width: 100%;
-            padding: 10px;
+            padding: 9px;
             margin: 6px 0 12px 0;
             background: #140904;
             border: 2px solid var(--wood-main);
             color: var(--gold-text);
-            font-size: 1rem;
+            font-size: 0.95rem;
             font-family: inherit;
             font-weight: bold;
             border-radius: 6px;
@@ -453,6 +455,17 @@
         }
 
         .input-box:focus { outline: none; border-color: var(--gold-bright); }
+
+        .room-item {
+            background: #190b04;
+            border: 1px solid var(--wood-main);
+            border-radius: 6px;
+            padding: 8px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
     </style>
 </head>
 <body>
@@ -460,7 +473,7 @@
     <!-- CABEÇALHO -->
     <header>
         <div class="header-title">
-            <h1>Policia</h1>
+            <h1 id="ui-game-mode-title">Policia</h1>
         </div>
         <div class="stats-wood-board">
             <div class="stat-item">
@@ -478,12 +491,12 @@
         </div>
         <div class="header-buttons">
             <button class="btn-wood" onclick="App.togglePlayersDrawer()">👥 (<span id="ui-header-players-count">1</span>)</button>
-            <button class="btn-wood" onclick="App.openLobby()">Mudar Sala</button>
+            <button class="btn-wood" onclick="App.openMainMenu()">Menu Principal</button>
         </div>
     </header>
 
     <!-- FAIXA DE TURNO -->
-    <div id="turn-banner" class="waiting-turn">Conectando à mesa...</div>
+    <div id="turn-banner" class="waiting-turn">Carregando...</div>
 
     <!-- PAINEL LATERAL DE JOGADORES (GAVETA / DRAWER) -->
     <div id="drawer-backdrop" class="drawer-backdrop" onclick="App.togglePlayersDrawer()"></div>
@@ -503,7 +516,6 @@
             <div id="board-grid"></div>
         </div>
 
-        <!-- CONTROLES FLUTUANTES DO MAPA -->
         <div class="map-controls">
             <button class="btn-map" onclick="PanZoom.zoom(0.18)" title="Aproximar">➕</button>
             <button class="btn-map" onclick="PanZoom.zoom(-0.18)" title="Afastar">➖</button>
@@ -521,22 +533,87 @@
         <div id="hand-slots" class="hand-container"></div>
     </footer>
 
-    <!-- LOBBY / ENTRADA NA SALA -->
-    <div id="lobby-modal" class="modal">
+    <!-- MODAL 1: MENU PRINCIPAL (SOLO OU MULTIPLAYER) -->
+    <div id="menu-modal" class="modal">
         <div class="modal-content">
-            <h2 style="color:var(--gold-text); margin-bottom:8px;">Mesa de Jogo</h2>
-            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:12px;">Para jogarem juntos, usem o mesmo código de sala e nomes diferentes:</p>
-            
-            <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">CÓDIGO DA SALA:</label>
-            <input id="inp-room" class="input-box" type="text" value="ClariFaz8" maxlength="15">
+            <h2 style="color:var(--gold-text); margin-bottom:6px;">Policia - Fuga do Cânion</h2>
+            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:16px;">Como você deseja jogar hoje?</p>
 
-            <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO ÚNICO:</label>
-            <input id="inp-player" class="input-box" type="text" value="Princesa da familia Lira" maxlength="25">
+            <button class="btn-wood" style="width:100%; padding:12px; margin-bottom:10px; font-size:0.95rem;" onclick="App.showSoloConfig()">
+                🤠 Jogar Sozinho (vs Robô Xerife)
+            </button>
+            <button class="btn-wood" style="width:100%; padding:12px; font-size:0.95rem; background:linear-gradient(180deg, #2a9d8f 0%, #1e6b61 100%);" onclick="App.showMultiplayerLobby()">
+                👥 Jogar em Grupo (Online com Amigos)
+            </button>
+        </div>
+    </div>
+
+    <!-- MODAL 2: CONFIGURAÇÃO DO MODO SOLO -->
+    <div id="solo-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color:var(--gold-text); margin-bottom:8px;">Modo Solo</h2>
+            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:12px;">Você jogará em dupla cooperativa contra a Inteligência Artificial!</p>
+
+            <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO:</label>
+            <input id="inp-solo-name" class="input-box" type="text" value="Princesa da familia Lira" maxlength="25">
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SAÍDAS DA CELA INICIAL:</label>
             <div style="display:flex; justify-content:center; gap:10px; margin:8px 0 16px 0;">
-                <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.joinRoom(5)">5 Saídas (Fácil)</button>
-                <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.joinRoom(6)">6 Saídas (Difícil)</button>
+                <button class="btn-wood" style="flex:1; padding:10px;" onclick="App.startSolo(5)">5 Saídas (Fácil)</button>
+                <button class="btn-wood" style="flex:1; padding:10px;" onclick="App.startSolo(6)">6 Saídas (Difícil)</button>
+            </div>
+            <button class="btn-wood" style="width:100%; padding:6px; background:#4a2814;" onclick="App.openMainMenu()">Voltar</button>
+        </div>
+    </div>
+
+    <!-- MODAL 3: LOBBY MULTIPLAYER COM GERAÇÃO CLARIFAZ -->
+    <div id="multi-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color:var(--gold-text); margin-bottom:6px;">Salas Online</h2>
+            
+            <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO ÚNICO:</label>
+            <input id="inp-multi-name" class="input-box" type="text" value="Princesa da familia Lira" maxlength="25">
+
+            <div style="background:#140904; border:1px solid var(--wood-main); border-radius:8px; padding:10px; margin-bottom:12px;">
+                <label style="font-size:0.75rem; color:var(--gold-bright); font-weight:bold;">CRIAR NOVA SALA:</label>
+                <div style="display:flex; gap:6px; margin:6px 0;">
+                    <input id="inp-new-room" class="input-box" style="margin:0;" type="text" value="ClariFaz8">
+                    <button class="btn-wood" onclick="App.generateRandomRoomCode()" title="Gerar novo código">🎲</button>
+                </div>
+                <div style="display:flex; gap:6px; margin-top:8px;">
+                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(5)">5 Saídas (Fácil)</button>
+                    <button class="btn-wood" style="flex:1; padding:8px;" onclick="App.createMultiRoom(6)">6 Saídas (Difícil)</button>
+                </div>
+            </div>
+
+            <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SALAS ABERTAS DETECTADAS:</label>
+            <div id="rooms-list-container" style="max-height:120px; overflow-y:auto; margin:6px 0 12px 0;">
+                <p style="font-size:0.8rem; color:#777; padding:10px;">Procurando salas ativas...</p>
+            </div>
+
+            <button class="btn-wood" style="width:100%; padding:6px; background:#4a2814;" onclick="App.openMainMenu()">Voltar ao Menu</button>
+        </div>
+    </div>
+
+    <!-- MODAL 4: SALA DE ESPERA / APROVAÇÃO (GUEST) -->
+    <div id="waiting-approval-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color:var(--gold-text); margin-bottom:8px;">Aguardando Aprovação</h2>
+            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:16px;">O Administrador da sala está avaliando a sua entrada...</p>
+            <div style="font-size:1.8rem; margin-bottom:16px;">⏳</div>
+            <button class="btn-wood" onclick="App.cancelJoinRequest()">Cancelar</button>
+        </div>
+    </div>
+
+    <!-- MODAL 5: SOLICITAÇÃO DE ENTRADA (HOST APROVA) -->
+    <div id="host-approval-modal" class="modal hidden">
+        <div class="modal-content">
+            <h2 style="color:var(--gold-text); margin-bottom:8px;">Solicitação de Entrada</h2>
+            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:12px;">O seguinte jogador deseja entrar na sua sala:</p>
+            <h3 id="ui-requesting-player-name" style="color:#70e000; margin-bottom:16px;">Jogador</h3>
+            <div style="display:flex; gap:10px;">
+                <button class="btn-wood" style="flex:1; padding:10px; background:var(--turn-green);" onclick="App.respondJoinRequest(true)">Aprovar Entrada</button>
+                <button class="btn-wood" style="flex:1; padding:10px; background:var(--turn-wait);" onclick="App.respondJoinRequest(false)">Recusar</button>
             </div>
         </div>
     </div>
@@ -546,7 +623,7 @@
         <div class="modal-content">
             <h2 id="result-title" style="color:var(--gold-text); margin-bottom:8px;">Fim de Jogo</h2>
             <p id="result-message" style="color:#d1bfa9; margin-bottom:16px;">Partida finalizada!</p>
-            <button class="btn-wood" style="width:100%; padding:10px;" onclick="App.openLobby()">Nova Partida</button>
+            <button class="btn-wood" style="width:100%; padding:10px;" onclick="App.openMainMenu()">Menu Principal</button>
         </div>
     </div>
 
@@ -556,53 +633,44 @@
  */
 const PanZoom = {
     x: 0, y: 0, scale: 1, isDragging: false, startX: 0, startY: 0, hasMoved: false,
-
     init() {
         const vp = document.getElementById('viewport');
-
         vp.addEventListener('pointerdown', (e) => {
             this.isDragging = true;
             this.startX = e.clientX - this.x;
             this.startY = e.clientY - this.y;
             this.hasMoved = false;
         });
-
         window.addEventListener('pointermove', (e) => {
             if (!this.isDragging) return;
             const dx = Math.abs(e.clientX - (this.startX + this.x));
             const dy = Math.abs(e.clientY - (this.startY + this.y));
             if (dx > 4 || dy > 4) this.hasMoved = true;
-
             this.x = e.clientX - this.startX;
             this.y = e.clientY - this.startY;
             this.applyTransform();
         });
-
         window.addEventListener('pointerup', () => { this.isDragging = false; });
-
         vp.addEventListener('wheel', (e) => {
             e.preventDefault();
             this.zoom(e.deltaY < 0 ? 0.1 : -0.1);
         }, { passive: false });
     },
-
     zoom(delta) {
         this.scale = Math.min(Math.max(0.4, this.scale + delta), 2.2);
         this.applyTransform();
     },
-
     recenter() {
         this.x = 0; this.y = 0; this.scale = 1;
         this.applyTransform();
     },
-
     applyTransform() {
         document.getElementById('board-container').style.transform = `translate(${this.x}px, ${this.y}px) scale(${this.scale})`;
     }
 };
 
 /**
- * ÁUDIO SINTÉTICO (WEB AUDIO API)
+ * EFEITOS SONOROS (WEB AUDIO API)
  */
 const Sound = {
     ctx: null,
@@ -864,20 +932,26 @@ class Deck {
 }
 
 /**
- * CONTROLADOR PRINCIPAL
+ * CONTROLADOR PRINCIPAL COM LOBBY, SALAS, HOST, APROVAÇÃO E TIMEOUT
  */
 const App = {
+    mode: 'SOLO',
     board: null,
     deck: null,
+    aiDeck: null,
     selectedIdx: null,
     rotation: 0,
-    roomCode: 'ClariFaz8',
+    roomCode: '',
     playerName: '',
     myPlayerId: '',
     players: [],
     currentTurnIndex: 0,
     mqttClient: null,
     cardsPlaced: 0,
+    activeRoomsMap: new Map(),
+    pendingJoinRequest: null,
+    lastActivityTime: Date.now(),
+    inactivityInterval: null,
 
     init() {
         this.board = new Board();
@@ -885,6 +959,20 @@ const App = {
         this.selectedIdx = null;
         this.rotation = 0;
         this.cardsPlaced = 0;
+        this.resetInactivityTimer();
+    },
+
+    resetInactivityTimer() {
+        this.lastActivityTime = Date.now();
+        if (this.inactivityInterval) clearInterval(this.inactivityInterval);
+        
+        this.inactivityInterval = setInterval(() => {
+            const elapsed = Date.now() - this.lastActivityTime;
+            if (elapsed > 10 * 60 * 1000) {
+                alert('A partida foi encerrada automaticamente por inatividade (10 minutos sem jogar).');
+                this.openMainMenu();
+            }
+        }, 15000);
     },
 
     togglePlayersDrawer() {
@@ -929,26 +1017,60 @@ const App = {
         });
     },
 
-    joinRoom(difficulty) {
-        const roomInput = document.getElementById('inp-room').value.trim() || 'ClariFaz8';
-        const nameInput = document.getElementById('inp-player').value.trim();
-
-        if (!nameInput || nameInput.length < 2) {
-            alert('Por favor, digite um nome ou apelido com pelo menos 2 letras!');
-            return;
+    openMainMenu() {
+        if (this.mqttClient && this.mqttClient.connected) {
+            this.sendNetMessage('PLAYER_LEFT', {
+                id: this.myPlayerId,
+                name: this.playerName
+            });
+            try { this.mqttClient.end(); } catch(e) {}
+            this.mqttClient = null;
         }
+        this.hideAllModals();
+        document.getElementById('players-drawer').classList.remove('open');
+        document.getElementById('drawer-backdrop').classList.remove('active');
+        document.getElementById('menu-modal').classList.remove('hidden');
+    },
 
-        this.roomCode = roomInput;
-        this.playerName = nameInput;
-        this.myPlayerId = 'p_' + Math.random().toString(36).substring(2, 8);
+    showSoloConfig() {
+        this.hideAllModals();
+        document.getElementById('solo-modal').classList.remove('hidden');
+    },
 
-        this.players = [{ id: this.myPlayerId, name: this.playerName }];
+    showMultiplayerLobby() {
+        this.hideAllModals();
+        document.getElementById('multi-modal').classList.remove('hidden');
+        this.connectDiscovery();
+    },
+
+    hideAllModals() {
+        ['menu-modal', 'solo-modal', 'multi-modal', 'waiting-approval-modal', 'host-approval-modal', 'result-modal']
+            .forEach(id => document.getElementById(id).classList.add('hidden'));
+    },
+
+    generateRandomRoomCode() {
+        const randomNum = Math.floor(1 + Math.random() * 999);
+        document.getElementById('inp-new-room').value = `ClariFaz${randomNum}`;
+    },
+
+    startSolo(difficulty) {
+        const name = document.getElementById('inp-solo-name').value.trim() || 'Princesa da familia Lira';
+        this.playerName = name;
+        this.mode = 'SOLO';
+        this.myPlayerId = 'p_human';
+        this.players = [
+            { id: 'p_human', name: this.playerName },
+            { id: 'p_bot', name: 'Robô Xerife' }
+        ];
         this.currentTurnIndex = 0;
 
-        document.getElementById('ui-room-code').innerText = this.roomCode;
-        document.getElementById('lobby-modal').classList.add('hidden');
+        document.getElementById('ui-game-mode-title').innerText = 'Policia (Solo)';
+        document.getElementById('ui-room-code').innerText = 'Solo vs Robô';
+        this.hideAllModals();
 
         this.init();
+        this.aiDeck = new Deck();
+
         if (difficulty === 6) {
             this.board.place(-1, 0, new Card(CardCatalog.JAIL_6_L, 0));
             this.board.place(0, 0, new Card(CardCatalog.JAIL_6_M, 0));
@@ -958,34 +1080,144 @@ const App = {
             this.board.place(1, 0, new Card(CardCatalog.JAIL_5_R, 0));
         }
 
-        this.connectNetwork();
         this.updateUI();
         this.renderAll();
         PanZoom.recenter();
     },
 
-    connectNetwork() {
+    connectDiscovery() {
+        if (this.mqttClient && this.mqttClient.connected) return;
+
+        this.myPlayerId = 'p_' + Math.random().toString(36).substring(2, 8);
         this.mqttClient = mqtt.connect('wss://broker.emqx.io:8084/mqtt', {
-            clientId: 'canion_' + this.myPlayerId,
+            clientId: 'discovery_' + this.myPlayerId,
             clean: true,
             connectTimeout: 5000
         });
 
-        const topic = `canion-coop-clarifaz/${this.roomCode}`;
-
         this.mqttClient.on('connect', () => {
-            this.mqttClient.subscribe(topic);
-            this.sendNetMessage('PLAYER_ENTERED', {
-                id: this.myPlayerId,
-                name: this.playerName
+            this.mqttClient.subscribe('canion-rooms-discovery/global');
+        });
+
+        this.mqttClient.on('message', (topic, payload) => {
+            try {
+                const data = JSON.parse(payload.toString());
+                if (data.type === 'ROOM_HEARTBEAT') {
+                    this.activeRoomsMap.set(data.roomCode, {
+                        ...data,
+                        lastSeen: Date.now()
+                    });
+                    this.renderRoomsList();
+                }
+            } catch(e) {}
+        });
+    },
+
+    renderRoomsList() {
+        const container = document.getElementById('rooms-list-container');
+        const now = Date.now();
+        let html = '';
+
+        for (const [code, info] of this.activeRoomsMap.entries()) {
+            if (now - info.lastSeen < 6000) {
+                html += `
+                    <div class="room-item">
+                        <div style="text-align:left;">
+                            <strong style="color:var(--gold-text); font-size:0.85rem;">${code}</strong><br>
+                            <small style="color:#aaa;">Host: ${info.hostName} (${info.playerCount} jogadores)</small>
+                        </div>
+                        <button class="btn-wood" style="padding:4px 8px; font-size:0.75rem;" onclick="App.requestJoinRoom('${code}')">Entrar</button>
+                    </div>
+                `;
+            }
+        }
+
+        container.innerHTML = html || '<p style="font-size:0.8rem; color:#777; padding:8px;">Nenhuma sala pública ativa no momento.</p>';
+    },
+
+    createMultiRoom(difficulty) {
+        const name = document.getElementById('inp-multi-name').value.trim();
+        const room = document.getElementById('inp-new-room').value.trim() || 'ClariFaz8';
+
+        if (!name || name.length < 2) {
+            alert('Por favor, digite um nome com pelo menos 2 letras!');
+            return;
+        }
+
+        this.mode = 'MULTI';
+        this.playerName = name;
+        this.roomCode = room;
+        this.players = [{ id: this.myPlayerId, name: this.playerName }];
+        this.currentTurnIndex = 0;
+
+        document.getElementById('ui-game-mode-title').innerText = 'Policia';
+        document.getElementById('ui-room-code').innerText = this.roomCode;
+        this.hideAllModals();
+
+        this.init();
+
+        if (difficulty === 6) {
+            this.board.place(-1, 0, new Card(CardCatalog.JAIL_6_L, 0));
+            this.board.place(0, 0, new Card(CardCatalog.JAIL_6_M, 0));
+            this.board.place(1, 0, new Card(CardCatalog.JAIL_6_R, 0));
+        } else {
+            this.board.place(0, 0, new Card(CardCatalog.JAIL_5_L, 0));
+            this.board.place(1, 0, new Card(CardCatalog.JAIL_5_R, 0));
+        }
+
+        this.connectRoomNetwork();
+        this.updateUI();
+        this.renderAll();
+        PanZoom.recenter();
+
+        setInterval(() => {
+            if (this.isHost() && this.mqttClient && this.mqttClient.connected) {
+                this.mqttClient.publish('canion-rooms-discovery/global', JSON.stringify({
+                    type: 'ROOM_HEARTBEAT',
+                    roomCode: this.roomCode,
+                    hostName: this.playerName,
+                    playerCount: this.players.length
+                }));
+            }
+        }, 3000);
+    },
+
+    requestJoinRoom(roomCode) {
+        const name = document.getElementById('inp-multi-name').value.trim();
+        if (!name || name.length < 2) {
+            alert('Digite seu nome antes de entrar!');
+            return;
+        }
+
+        this.mode = 'MULTI';
+        this.playerName = name;
+        this.roomCode = roomCode;
+
+        this.hideAllModals();
+        document.getElementById('waiting-approval-modal').classList.remove('hidden');
+
+        this.connectRoomNetwork(() => {
+            this.sendNetMessage('REQUEST_JOIN', {
+                candidateId: this.myPlayerId,
+                candidateName: this.playerName
             });
+        });
+    },
+
+    cancelJoinRequest() {
+        this.openMainMenu();
+    },
+
+    connectRoomNetwork(onReady) {
+        const topic = `canion-coop-game/${this.roomCode}`;
+        this.mqttClient.subscribe(topic, () => {
+            if (onReady) onReady();
         });
 
         this.mqttClient.on('message', (t, payload) => {
             try {
                 const msg = JSON.parse(payload.toString());
                 if (msg.senderId === this.myPlayerId) return;
-
                 this.handleNetworkMessage(msg);
             } catch(e) {}
         });
@@ -993,38 +1225,49 @@ const App = {
 
     sendNetMessage(type, data) {
         if (!this.mqttClient || !this.mqttClient.connected) return;
-        const payload = JSON.stringify({
+        this.mqttClient.publish(`canion-coop-game/${this.roomCode}`, JSON.stringify({
             type: type,
             senderId: this.myPlayerId,
             senderName: this.playerName,
             ...data
-        });
-        this.mqttClient.publish(`canion-coop-clarifaz/${this.roomCode}`, payload);
+        }));
+    },
+
+    isHost() {
+        return this.players.length > 0 && this.players[0].id === this.myPlayerId;
     },
 
     handleNetworkMessage(msg) {
-        if (msg.type === 'PLAYER_ENTERED') {
-            const nameConflict = this.players.some(p => p.id !== msg.id && p.name.trim().toLowerCase() === msg.name.trim().toLowerCase());
-            
-            if (nameConflict) {
-                this.sendNetMessage('NAME_TAKEN', {
-                    targetId: msg.id,
-                    takenName: msg.name
-                });
-                return;
-            }
+        this.resetInactivityTimer();
 
-            const exists = this.players.find(p => p.id === msg.id);
-            if (!exists) {
+        if (msg.type === 'REQUEST_JOIN') {
+            if (this.isHost()) {
+                this.pendingJoinRequest = msg;
+                document.getElementById('ui-requesting-player-name').innerText = msg.candidateName;
+                document.getElementById('host-approval-modal').classList.remove('hidden');
+            }
+        } else if (msg.type === 'RESPONSE_JOIN') {
+            if (msg.candidateId === this.myPlayerId) {
+                document.getElementById('waiting-approval-modal').classList.add('hidden');
+                if (msg.approved) {
+                    this.init();
+                    document.getElementById('ui-game-mode-title').innerText = 'Policia';
+                    document.getElementById('ui-room-code').innerText = this.roomCode;
+                    this.sendNetMessage('PLAYER_CONFIRMED_ENTRY', {
+                        id: this.myPlayerId,
+                        name: this.playerName
+                    });
+                } else {
+                    alert('Sua solicitação de entrada foi recusada pelo Administrador da sala.');
+                    this.openMainMenu();
+                }
+            }
+        } else if (msg.type === 'PLAYER_CONFIRMED_ENTRY') {
+            if (!this.players.some(p => p.id === msg.id)) {
                 this.players.push({ id: msg.id, name: msg.name });
             }
-            this.sendFullStateSync();
+            if (this.isHost()) this.sendFullStateSync();
             this.updateUI();
-        } else if (msg.type === 'NAME_TAKEN') {
-            if (msg.targetId === this.myPlayerId) {
-                alert(`O nome "${msg.takenName}" já está sendo usado nesta sala! Por favor, escolha outro nome ou apelido.`);
-                this.openLobby();
-            }
         } else if (msg.type === 'PLAYER_LEFT') {
             const leavingIndex = this.players.findIndex(p => p.id === msg.id);
             if (leavingIndex !== -1) {
@@ -1037,27 +1280,21 @@ const App = {
         } else if (msg.type === 'SYNC_FULL_STATE') {
             this.players = msg.players;
             this.currentTurnIndex = msg.turnIndex;
-
             this.board = new Board();
             msg.gridData.forEach(item => {
-                const template = CardCatalog[item.templateId];
-                if (template) {
-                    this.board.place(item.x, item.y, new Card(template, item.rotation));
-                }
+                const t = CardCatalog[item.templateId];
+                if (t) this.board.place(item.x, item.y, new Card(t, item.rotation));
             });
-
             this.renderAll();
             this.updateUI();
         } else if (msg.type === 'PLAY_CARD_ACTION') {
-            const template = CardCatalog[msg.templateId];
-            if (template) {
-                this.board.place(msg.x, msg.y, new Card(template, msg.rotation));
+            const t = CardCatalog[msg.templateId];
+            if (t) {
+                this.board.place(msg.x, msg.y, new Card(t, msg.rotation));
                 this.cardsPlaced++;
                 this.currentTurnIndex = msg.nextTurnIndex;
-                
                 Sound.playTap();
                 if (this.isMyTurn()) Sound.playTurnNotice();
-
                 this.renderAll();
                 this.updateUI();
                 this.checkGameEnd();
@@ -1065,16 +1302,31 @@ const App = {
         }
     },
 
+    respondJoinRequest(approved) {
+        document.getElementById('host-approval-modal').classList.add('hidden');
+        if (!this.pendingJoinRequest) return;
+
+        this.sendNetMessage('RESPONSE_JOIN', {
+            candidateId: this.pendingJoinRequest.candidateId,
+            approved: approved
+        });
+
+        if (approved) {
+            this.players.push({
+                id: this.pendingJoinRequest.candidateId,
+                name: this.pendingJoinRequest.candidateName
+            });
+            this.sendFullStateSync();
+            this.updateUI();
+        }
+        this.pendingJoinRequest = null;
+    },
+
     sendFullStateSync() {
         const gridData = [];
         for (const [key, card] of this.board.grid.entries()) {
             const [x, y] = key.split(',').map(Number);
-            gridData.push({
-                x: x,
-                y: y,
-                templateId: card.template.id,
-                rotation: card.rotation
-            });
+            gridData.push({ x, y, templateId: card.template.id, rotation: card.rotation });
         }
         this.sendNetMessage('SYNC_FULL_STATE', {
             gridData: gridData,
@@ -1085,14 +1337,14 @@ const App = {
 
     isMyTurn() {
         if (this.players.length === 0) return true;
-        const currentActive = this.players[this.currentTurnIndex % this.players.length];
-        return currentActive && currentActive.id === this.myPlayerId;
+        const cur = this.players[this.currentTurnIndex % this.players.length];
+        return cur && cur.id === this.myPlayerId;
     },
 
     getCurrentTurnPlayerName() {
         if (this.players.length === 0) return this.playerName;
-        const currentActive = this.players[this.currentTurnIndex % this.players.length];
-        return currentActive ? currentActive.name : 'Jogador';
+        const cur = this.players[this.currentTurnIndex % this.players.length];
+        return cur ? cur.name : 'Jogador';
     },
 
     selectCard(idx) {
@@ -1101,12 +1353,8 @@ const App = {
             return;
         }
         Sound.playTap();
-        if (this.selectedIdx === idx) {
-            this.selectedIdx = null;
-        } else {
-            this.selectedIdx = idx;
-            this.rotation = 0;
-        }
+        this.selectedIdx = (this.selectedIdx === idx) ? null : idx;
+        this.rotation = 0;
         this.updateUI();
         this.renderHand();
         this.renderBoard();
@@ -1122,51 +1370,79 @@ const App = {
     },
 
     handleCellClick(x, y) {
-        if (PanZoom.hasMoved) return;
-        if (!this.isMyTurn()) return;
-        if (this.selectedIdx === null) return;
-
+        if (PanZoom.hasMoved || !this.isMyTurn() || this.selectedIdx === null) return;
         const card = this.deck.hand[this.selectedIdx];
         if (!card) return;
 
         if (this.board.isValidPlacement(card, { x, y }, this.rotation)) {
             Sound.playTap();
-            const placed = new Card(card.template, this.rotation);
-            this.board.place(x, y, placed);
-
-            const nextTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
-            this.currentTurnIndex = nextTurnIndex;
-
-            this.sendNetMessage('PLAY_CARD_ACTION', {
-                x: x,
-                y: y,
-                templateId: card.template.id,
-                rotation: this.rotation,
-                nextTurnIndex: nextTurnIndex
-            });
-
+            this.board.place(x, y, new Card(card.template, this.rotation));
             this.deck.use(this.selectedIdx);
             this.cardsPlaced++;
             this.selectedIdx = null;
             this.rotation = 0;
+            this.resetInactivityTimer();
+
+            const nextTurn = (this.currentTurnIndex + 1) % this.players.length;
+            this.currentTurnIndex = nextTurn;
+
+            if (this.mode === 'MULTI') {
+                this.sendNetMessage('PLAY_CARD_ACTION', {
+                    x, y, templateId: card.template.id, rotation: this.rotation, nextTurnIndex: nextTurn
+                });
+            }
 
             this.updateUI();
             this.renderAll();
             this.checkGameEnd();
+
+            if (this.mode === 'SOLO' && this.players[this.currentTurnIndex].id === 'p_bot') {
+                setTimeout(() => this.playAITurn(), 1000);
+            }
         }
+    },
+
+    playAITurn() {
+        const margin = 1;
+        const minX = this.board.minX - margin, maxX = this.board.maxX + margin;
+        const minY = this.board.minY - margin, maxY = this.board.maxY + margin;
+
+        for (let handIdx = 0; handIdx < this.aiDeck.hand.length; handIdx++) {
+            const card = this.aiDeck.hand[handIdx];
+            for (let rot = 0; rot < 360; rot += 90) {
+                for (let y = minY; y <= maxY; y++) {
+                    for (let x = minX; x <= maxX; x++) {
+                        if (this.board.isValidPlacement(card, { x, y }, rot)) {
+                            this.board.place(x, y, new Card(card.template, rot));
+                            this.aiDeck.use(handIdx);
+                            this.cardsPlaced++;
+                            this.currentTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
+                            Sound.playTap();
+                            Sound.playTurnNotice();
+                            this.renderAll();
+                            this.updateUI();
+                            this.checkGameEnd();
+                            return;
+                        }
+                    }
+                }
+            }
+        }
+        this.aiDeck.use(0);
+        this.currentTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
+        this.updateUI();
     },
 
     checkGameEnd() {
         const exits = this.board.getOpenExitsCount();
         const deckLeft = this.deck.cards.length;
-        const handLeft = this.deck.hand.length;
 
         if (exits === 0 && this.cardsPlaced > 0) {
             Sound.playWin();
             document.getElementById('result-title').innerText = 'Bandido Capturado!';
-            document.getElementById('result-message').innerText = 'Parabéns! Vocês fecharam todas as rotas de fuga!';
+            document.getElementById('result-message').innerText = 'Parabéns! Todas as rotas de fuga foram fechadas!';
             document.getElementById('result-modal').classList.remove('hidden');
-        } else if (deckLeft === 0 && handLeft === 0 && exits > 0) {
+        } else if (deckLeft === 0 && exits > 0) {
             document.getElementById('result-title').innerText = 'O Bandido Fugiu!';
             document.getElementById('result-message').innerText = 'As cartas do monte acabaram e ainda existiam túneis abertos.';
             document.getElementById('result-modal').classList.remove('hidden');
@@ -1176,17 +1452,12 @@ const App = {
     renderBoard() {
         const gridEl = document.getElementById('board-grid');
         gridEl.innerHTML = '';
-
         if (!this.board) return;
 
         const pad = 1;
-        const minX = this.board.minX - pad;
-        const maxX = this.board.maxX + pad;
-        const minY = this.board.minY - pad;
-        const maxY = this.board.maxY + pad;
-
-        const cols = (maxX - minX) + 1;
-        const rows = (maxY - minY) + 1;
+        const minX = this.board.minX - pad, maxX = this.board.maxX + pad;
+        const minY = this.board.minY - pad, maxY = this.board.maxY + pad;
+        const cols = (maxX - minX) + 1, rows = (maxY - minY) + 1;
 
         gridEl.style.gridTemplateColumns = `repeat(${cols}, var(--cell-size))`;
         gridEl.style.gridTemplateRows = `repeat(${rows}, var(--cell-size))`;
@@ -1197,8 +1468,8 @@ const App = {
             for (let x = minX; x <= maxX; x++) {
                 const cell = document.createElement('div');
                 cell.className = 'grid-cell';
-
                 const placed = this.board.get(x, y);
+
                 if (placed) {
                     cell.innerHTML = SVGRenderer.render(placed);
                 } else if (activeCard) {
@@ -1218,13 +1489,11 @@ const App = {
         const container = document.getElementById('hand-slots');
         container.innerHTML = '';
         if (!this.deck) return;
-
         const myTurn = this.isMyTurn();
 
         for (let i = 0; i < 3; i++) {
             const slot = document.createElement('div');
             const card = this.deck.hand[i];
-
             if (card) {
                 slot.className = `hand-card ${this.selectedIdx === i ? 'selected' : ''} ${!myTurn ? 'disabled' : ''}`;
                 const rot = this.selectedIdx === i ? this.rotation : 0;
@@ -1247,10 +1516,7 @@ const App = {
         const banner = document.getElementById('turn-banner');
         const activeName = this.getCurrentTurnPlayerName();
 
-        if (this.players.length === 1) {
-            banner.className = 'my-turn';
-            banner.innerText = `⭐ SUA VEZ (${this.playerName})! (Aguardando alguém na sala "${this.roomCode}")`;
-        } else if (this.isMyTurn()) {
+        if (this.isMyTurn()) {
             banner.className = 'my-turn';
             banner.innerText = `⭐ SUA VEZ (${this.playerName})! Toque em 1 carta e posicione na mesa.`;
         } else {
@@ -1260,7 +1526,6 @@ const App = {
 
         const btnRot = document.getElementById('btn-rotate');
         const txtRot = document.getElementById('ui-rotation');
-
         if (this.selectedIdx !== null && this.isMyTurn()) {
             btnRot.removeAttribute('disabled');
             txtRot.innerText = `(${this.rotation}°)`;
@@ -1269,7 +1534,6 @@ const App = {
             txtRot.innerText = '(0°)';
         }
 
-        // Atualiza a lista na gaveta caso ela esteja aberta
         if (document.getElementById('players-drawer').classList.contains('open')) {
             this.renderPlayersDrawer();
         }
@@ -1278,44 +1542,12 @@ const App = {
     renderAll() {
         this.renderHand();
         this.renderBoard();
-    },
-
-    openLobby() {
-        if (this.mqttClient && this.mqttClient.connected) {
-            this.sendNetMessage('PLAYER_LEFT', {
-                id: this.myPlayerId,
-                name: this.playerName
-            });
-            try { this.mqttClient.end(); } catch(e) {}
-            this.mqttClient = null;
-        }
-
-        // Fecha a gaveta se estiver aberta
-        document.getElementById('players-drawer').classList.remove('open');
-        document.getElementById('drawer-backdrop').classList.remove('active');
-
-        this.board = null;
-        this.deck = null;
-        this.players = [];
-        this.selectedIdx = null;
-        this.rotation = 0;
-        this.cardsPlaced = 0;
-
-        document.getElementById('board-grid').innerHTML = '';
-        document.getElementById('hand-slots').innerHTML = '';
-        document.getElementById('ui-open-exits').innerText = '-';
-        document.getElementById('ui-deck-count').innerText = '-';
-        document.getElementById('ui-header-players-count').innerText = '0';
-        document.getElementById('turn-banner').className = 'waiting-turn';
-        document.getElementById('turn-banner').innerText = 'Conectando à mesa...';
-
-        document.getElementById('result-modal').classList.add('hidden');
-        document.getElementById('lobby-modal').classList.remove('hidden');
     }
 };
 
 window.addEventListener('DOMContentLoaded', () => {
     PanZoom.init();
+    App.openMainMenu();
 });
 </script>
 
