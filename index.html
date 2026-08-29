@@ -4,7 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Policia - Fuga do Cânion</title>
-    <!-- Biblioteca MQTT moderna para conexão em tempo real -->
     <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
     <style>
         :root {
@@ -42,7 +41,6 @@
             font-family: 'Georgia', serif;
         }
 
-        /* CABEÇALHO COMPACTO */
         header {
             background: linear-gradient(180deg, #3d2213 0%, #201108 100%);
             border-bottom: 2px solid #140a05;
@@ -108,7 +106,6 @@
         }
         .btn-wood:hover { filter: brightness(1.15); }
 
-        /* FAIXA INDICADORA DE TURNO */
         #turn-banner {
             padding: 4px 8px;
             text-align: center;
@@ -139,7 +136,6 @@
             to { background-color: #2d6a4f; }
         }
 
-        /* VIEWPORT E CÂMERA LIVRE */
         #viewport {
             flex: 1 1 auto;
             min-height: 0;
@@ -201,7 +197,6 @@
             border: 1px dashed rgba(231, 111, 81, 0.4);
         }
 
-        /* CONTROLES FLUTUANTES DO MAPA */
         .map-controls {
             position: absolute;
             right: 10px;
@@ -231,7 +226,6 @@
 
         .btn-map:active { transform: scale(0.92); background: #3d2112; }
 
-        /* PAINEL LATERAL DE JOGADORES (DRAWER) */
         .drawer-backdrop {
             position: fixed;
             inset: 0;
@@ -342,7 +336,6 @@
             border-radius: 4px;
         }
 
-        /* PAINEL INFERIOR: MÃO DE CARTAS */
         footer {
             background: linear-gradient(0deg, #180e07 0%, #29160c 100%);
             border-top: 2px solid #140a05;
@@ -416,7 +409,6 @@
             pointer-events: none;
         }
 
-        /* MODAIS */
         .modal {
             position: fixed;
             inset: 0;
@@ -473,7 +465,6 @@
 </head>
 <body>
 
-    <!-- CABEÇALHO -->
     <header>
         <div class="header-title">
             <h1 id="ui-game-mode-title">Policia</h1>
@@ -498,10 +489,8 @@
         </div>
     </header>
 
-    <!-- FAIXA DE TURNO -->
     <div id="turn-banner" class="waiting-turn">Carregando...</div>
 
-    <!-- PAINEL LATERAL DE JOGADORES (DRAWER) -->
     <div id="drawer-backdrop" class="drawer-backdrop" onclick="App.togglePlayersDrawer()"></div>
     <div id="players-drawer" class="players-drawer">
         <div class="drawer-header">
@@ -511,7 +500,6 @@
         <ul id="players-list" class="players-list"></ul>
     </div>
 
-    <!-- VIEWPORT COM CÂMERA LIVRE -->
     <main id="viewport">
         <div id="board-container">
             <div id="board-grid"></div>
@@ -524,7 +512,6 @@
         </div>
     </main>
 
-    <!-- MÃO E CONTROLES -->
     <footer>
         <button id="btn-rotate" class="btn-rotate" onclick="App.rotateSelected()" disabled>
             ↻ Girar <span id="ui-rotation">(0°)</span>
@@ -532,7 +519,7 @@
         <div id="hand-slots" class="hand-container"></div>
     </footer>
 
-    <!-- MODAL 1: MENU PRINCIPAL (SOLO OU MULTIPLAYER) -->
+    <!-- MODAL 1: MENU PRINCIPAL -->
     <div id="menu-modal" class="modal">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:6px;">Policia - Fuga do Cânion</h2>
@@ -594,7 +581,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: SALA DE ESPERA / APROVAÇÃO (GUEST) -->
+    <!-- MODAL 4: SALA DE ESPERA / APROVAÇÃO -->
     <div id="waiting-approval-modal" class="modal hidden">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:8px;">Aguardando Aprovação</h2>
@@ -604,7 +591,7 @@
         </div>
     </div>
 
-    <!-- MODAL 5: SOLICITAÇÃO DE ENTRADA (HOST APROVA) -->
+    <!-- MODAL 5: SOLICITAÇÃO DE ENTRADA -->
     <div id="host-approval-modal" class="modal hidden">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:8px;">Solicitação de Entrada</h2>
@@ -627,9 +614,6 @@
     </div>
 
 <script>
-/**
- * SISTEMA DE CÂMERA LIVRE: PAN & ZOOM
- */
 const PanZoom = {
     x: 0, y: 0, scale: 1, isDragging: false, startX: 0, startY: 0, hasMoved: false,
     init() {
@@ -668,9 +652,6 @@ const PanZoom = {
     }
 };
 
-/**
- * EFEITOS SONOROS (WEB AUDIO API)
- */
 const Sound = {
     ctx: null,
     init() {
@@ -728,18 +709,13 @@ const Sound = {
     }
 };
 
-/**
- * CATÁLOGO DE CARTAS (CONEXÕES 100% UNIFORMES E ALINHADAS)
- */
 const CardCatalog = {
-    // CELAS INICIAIS MULTI-BLOCO
     JAIL_5_L: { id: 'JAIL_5_L', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '5_left' },
     JAIL_5_R: { id: 'JAIL_5_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '5_right' },
     JAIL_6_L: { id: 'JAIL_6_L', connections: { top: true, right: true, bottom: true, left: false }, isJail: true, jailType: '6_left' },
     JAIL_6_M: { id: 'JAIL_6_M', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '6_mid' },
     JAIL_6_R: { id: 'JAIL_6_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '6_right' },
 
-    // CARTAS DE TÚNEIS OFICIAIS
     CURVE:     { id: 'CURVE',     connections: { top: true, right: true, bottom: false, left: false } },
     STRAIGHT:  { id: 'STRAIGHT',  connections: { top: true, right: false, bottom: true, left: false } },
     T_JUNCT:   { id: 'T_JUNCT',   connections: { top: true, right: true, bottom: false, left: true } },
@@ -762,9 +738,6 @@ class Card {
     }
 }
 
-/**
- * RENDERIZADOR SVG DAS CARTAS COM ENCAIXE PRECISO E UNIFORME
- */
 const SVGRenderer = {
     render(card) {
         const conns = card.getConnections();
@@ -788,10 +761,8 @@ const SVGRenderer = {
             paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
 
-        // Centro do túnel
         paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
 
-        // Detalhes da Cela ou Barricada
         if (card.template.isJail) {
             const jType = card.template.jailType;
             if (jType === '5_left' || jType === '6_mid') {
@@ -832,9 +803,6 @@ const SVGRenderer = {
     }
 };
 
-/**
- * MOTOR DO TABULEIRO
- */
 class Board {
     constructor() {
         this.grid = new Map();
@@ -891,9 +859,6 @@ class Board {
     }
 }
 
-/**
- * BARALHO CALIBRADO (DISTRIBUIÇÃO DE 69 CARTAS NO MONTE COM PROTEÇÃO DA MÃO INICIAL)
- */
 class Deck {
     constructor() {
         this.cards = [];
@@ -916,16 +881,13 @@ class Deck {
             for (let c = 0; c < i.count; c++) pathPool.push(new Card(i.t));
         });
 
-        // Embaralha as peças de caminho
         for (let i = pathPool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
             [pathPool[i], pathPool[j]] = [pathPool[j], pathPool[i]];
         }
 
-        // Garante que a mão inicial receba 3 peças de construção (sem barricada imediata)
         this.hand = [pathPool.pop(), pathPool.pop(), pathPool.pop()];
 
-        // Adiciona as 6 barricadas ao restante do monte e embaralha tudo junto
         let remainingDeck = [...pathPool];
         barricades.forEach(i => {
             for (let c = 0; c < i.count; c++) remainingDeck.push(new Card(i.t));
@@ -953,9 +915,6 @@ class Deck {
     }
 }
 
-/**
- * CONTROLADOR PRINCIPAL
- */
 const App = {
     mode: 'SOLO',
     board: null,
@@ -1162,7 +1121,7 @@ const App = {
                     <div class="room-item">
                         <div style="text-align:left;">
                             <strong style="color:var(--gold-text); font-size:0.85rem;">${code}</strong><br>
-                            <small style="color:#aaa;">Host: ${info.hostName} (${info.playerCount} jogadores)</small>
+                            <small style="color:#aaa;">Xerife: ${info.hostName} (${info.playerCount} na mesa)</small>
                         </div>
                         <button class="btn-wood" style="padding:4px 8px; font-size:0.75rem;" onclick="App.requestJoinRoom('${code}')">Entrar</button>
                     </div>
@@ -1179,6 +1138,13 @@ const App = {
 
         if (!name || name.length < 2) {
             alert('Por favor, digite um nome com pelo menos 2 letras!');
+            return;
+        }
+
+        const existing = this.activeRoomsMap.get(room);
+        if (existing && Date.now() - existing.lastSeen < 6000) {
+            alert(`A sala "${room}" já está ativa! Redirecionando para entrada...`);
+            this.requestJoinRoom(room);
             return;
         }
 
@@ -1214,7 +1180,8 @@ const App = {
                     type: 'ROOM_HEARTBEAT',
                     roomCode: this.roomCode,
                     hostName: this.playerName,
-                    playerCount: this.players.length
+                    playerCount: this.players.length,
+                    playerNames: this.players.map(p => p.name.trim().toLowerCase())
                 }));
             }
         }, 3000);
@@ -1224,6 +1191,13 @@ const App = {
         const name = document.getElementById('inp-multi-name').value.trim();
         if (!name || name.length < 2) {
             alert('Digite seu nome antes de entrar!');
+            return;
+        }
+
+        // Pré-validação imediata no cliente se as informações da sala existirem
+        const roomInfo = this.activeRoomsMap.get(roomCode);
+        if (roomInfo && roomInfo.playerNames && roomInfo.playerNames.includes(name.toLowerCase())) {
+            alert(`O nome "${name}" já está em uso na sala "${roomCode}". Por favor, escolha outro apelido!`);
             return;
         }
 
@@ -1280,6 +1254,20 @@ const App = {
 
         if (msg.type === 'REQUEST_JOIN') {
             if (this.isHost()) {
+                const nameConflict = this.players.some(p => p.name.trim().toLowerCase() === msg.candidateName.trim().toLowerCase());
+                
+                // Rejeição AUTOMÁTICA do sistema sem alertar o Host
+                if (nameConflict) {
+                    this.sendNetMessage('RESPONSE_JOIN', {
+                        candidateId: msg.candidateId,
+                        approved: false,
+                        reason: 'NAME_TAKEN',
+                        takenName: msg.candidateName
+                    });
+                    return;
+                }
+
+                // Nome válido: abre solicitação normal de entrada
                 this.pendingJoinRequest = msg;
                 document.getElementById('ui-requesting-player-name').innerText = msg.candidateName;
                 document.getElementById('host-approval-modal').classList.remove('hidden');
@@ -1296,8 +1284,12 @@ const App = {
                         name: this.playerName
                     });
                 } else {
-                    alert('Sua solicitação de entrada foi recusada pelo Administrador da sala.');
-                    this.openMainMenu();
+                    if (msg.reason === 'NAME_TAKEN') {
+                        alert(`O nome "${msg.takenName || this.playerName}" já está em uso nesta sala! Por favor, escolha outro nome ou apelido.`);
+                    } else {
+                        alert('Sua solicitação de entrada foi recusada pelo Xerife da sala.');
+                    }
+                    this.showMultiplayerLobby();
                 }
             }
         } else if (msg.type === 'PLAYER_CONFIRMED_ENTRY') {
@@ -1434,7 +1426,6 @@ const App = {
             this.renderAll();
             this.checkGameEnd();
 
-            // Ativação da jogada do robô no Modo Solo
             if (this.mode === 'SOLO' && this.players[this.currentTurnIndex].id === 'p_bot') {
                 setTimeout(() => this.playAITurn(), 1000);
             }
@@ -1472,7 +1463,6 @@ const App = {
             }
         }
 
-        // Se o robô não tiver nenhuma jogada possível, descarta e passa a vez
         this.aiDeck.use(0);
         this.currentTurnIndex = (this.currentTurnIndex + 1) % this.players.length;
         this.renderAll();
