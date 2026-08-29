@@ -729,23 +729,22 @@ const Sound = {
 };
 
 /**
- * CATÁLOGO DE CARTAS (CELAS MULTI-BLOCO + FORMATOS GEOMÉTRICOS)
+ * CATÁLOGO DE CARTAS (CONEXÕES 100% UNIFORMES E ALINHADAS)
  */
 const CardCatalog = {
+    // CELAS INICIAIS MULTI-BLOCO
     JAIL_5_L: { id: 'JAIL_5_L', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '5_left' },
     JAIL_5_R: { id: 'JAIL_5_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '5_right' },
     JAIL_6_L: { id: 'JAIL_6_L', connections: { top: true, right: true, bottom: true, left: false }, isJail: true, jailType: '6_left' },
     JAIL_6_M: { id: 'JAIL_6_M', connections: { top: true, right: true, bottom: true, left: true }, isJail: true, jailType: '6_mid' },
     JAIL_6_R: { id: 'JAIL_6_R', connections: { top: true, right: false, bottom: true, left: true }, isJail: true, jailType: '6_right' },
 
-    CURVE_L:   { id: 'CURVE_L',   shape: 'L', connections: { top: true, right: true, bottom: false, left: false } },
-    U_LOOP:    { id: 'U_LOOP',    shape: 'U', connections: { top: true, right: false, bottom: false, left: true } },
-    Z_ZAG:     { id: 'Z_ZAG',     shape: 'Z', connections: { top: true, right: false, bottom: true, left: false } },
-    STRAIGHT:  { id: 'STRAIGHT',  shape: 'I', connections: { top: true, right: false, bottom: true, left: false } },
-    T_JUNCT:   { id: 'T_JUNCT',   shape: 'T', connections: { top: true, right: true, bottom: false, left: true } },
-    F_BRANCH:  { id: 'F_BRANCH',  shape: 'F', connections: { top: true, right: true, bottom: true, left: false } },
-    CROSS:     { id: 'CROSS',     shape: 'X', connections: { top: true, right: true, bottom: true, left: true } },
-    BARRICADE: { id: 'BARRICADE', shape: 'B', connections: { top: false, right: false, bottom: true, left: false }, isBarricade: true }
+    // CARTAS DE TÚNEIS OFICIAIS
+    CURVE:     { id: 'CURVE',     connections: { top: true, right: true, bottom: false, left: false } },
+    STRAIGHT:  { id: 'STRAIGHT',  connections: { top: true, right: false, bottom: true, left: false } },
+    T_JUNCT:   { id: 'T_JUNCT',   connections: { top: true, right: true, bottom: false, left: true } },
+    CROSS:     { id: 'CROSS',     connections: { top: true, right: true, bottom: true, left: true } },
+    BARRICADE: { id: 'BARRICADE', connections: { top: false, right: false, bottom: true, left: false }, isBarricade: true }
 };
 
 class Card {
@@ -764,49 +763,35 @@ class Card {
 }
 
 /**
- * RENDERIZADOR SVG DAS CARTAS
+ * RENDERIZADOR SVG DAS CARTAS COM ENCAIXE PRECISO E UNIFORME
  */
 const SVGRenderer = {
     render(card) {
         const conns = card.getConnections();
-        const shape = card.template.shape;
         const cx = 32, cy = 32, w = 18;
         let paths = '';
 
-        if (shape === 'Z') {
-            paths += `
-                <path d="M 23,0 L 41,0 L 41,20 L 23,44 L 23,64 L 41,64 L 41,40 L 59,16 L 59,0" fill="#211007"/>
-                <line x1="20" y1="12" x2="44" y2="12" stroke="#874a23" stroke-width="3"/>
-                <line x1="20" y1="52" x2="44" y2="52" stroke="#874a23" stroke-width="3"/>
-                <line x1="28" y1="30" x2="52" y2="30" stroke="#874a23" stroke-width="3"/>
-            `;
-        } else if (shape === 'U') {
-            paths += `
-                <path d="M 23,0 L 41,0 C 41,48 48,41 0,41 L 0,23 C 30,23 23,30 23,0 Z" fill="#211007"/>
-                <rect x="21" y="6" width="22" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>
-                <rect x="6" y="21" width="3.5" height="22" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>
-                <circle cx="32" cy="32" r="6" fill="#874a23" opacity="0.3"/>
-            `;
-        } else {
-            if (conns.top) {
-                paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
-                paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-            }
-            if (conns.bottom) {
-                paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#211007"/>`;
-                paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-            }
-            if (conns.left) {
-                paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
-                paths += `<rect x="4" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-            }
-            if (conns.right) {
-                paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
-                paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
-            }
-            paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
+        if (conns.top) {
+            paths += `<rect x="${cx - w/2}" y="0" width="${w}" height="${cy}" fill="#211007"/>`;
+            paths += `<rect x="${cx - w/2 - 2}" y="4" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+        }
+        if (conns.bottom) {
+            paths += `<rect x="${cx - w/2}" y="${cy}" width="${w}" height="${cy}" fill="#211007"/>`;
+            paths += `<rect x="${cx - w/2 - 2}" y="${cy + 18}" width="${w + 4}" height="3.5" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+        }
+        if (conns.left) {
+            paths += `<rect x="0" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+            paths += `<rect x="4" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
+        }
+        if (conns.right) {
+            paths += `<rect x="${cx}" y="${cy - w/2}" width="${cx}" height="${w}" fill="#211007"/>`;
+            paths += `<rect x="${cx + 18}" y="${cy - w/2 - 2}" width="3.5" height="${w + 4}" fill="#874a23" stroke="#180a03" stroke-width="0.8"/>`;
         }
 
+        // Centro do túnel
+        paths += `<rect x="${cx - w/2}" y="${cy - w/2}" width="${w}" height="${w}" fill="#211007"/>`;
+
+        // Detalhes da Cela ou Barricada
         if (card.template.isJail) {
             const jType = card.template.jailType;
             if (jType === '5_left' || jType === '6_mid') {
@@ -907,7 +892,7 @@ class Board {
 }
 
 /**
- * BARALHO CALIBRADO (DISTRIBUIÇÃO DE 69 CARTAS NO MONTE)
+ * BARALHO CALIBRADO (DISTRIBUIÇÃO DE 69 CARTAS NO MONTE COM PROTEÇÃO DA MÃO INICIAL)
  */
 class Deck {
     constructor() {
@@ -916,27 +901,42 @@ class Deck {
         this.init();
     }
     init() {
-        const pool = [
-            { t: CardCatalog.CURVE_L,  count: 14 },
-            { t: CardCatalog.U_LOOP,   count: 10 },
-            { t: CardCatalog.Z_ZAG,    count: 8 },
-            { t: CardCatalog.STRAIGHT, count: 10 },
-            { t: CardCatalog.T_JUNCT,  count: 8 },
-            { t: CardCatalog.F_BRANCH, count: 7 },
-            { t: CardCatalog.CROSS,    count: 6 },
+        const buildCards = [
+            { t: CardCatalog.CURVE,    count: 26 },
+            { t: CardCatalog.STRAIGHT, count: 16 },
+            { t: CardCatalog.T_JUNCT,  count: 14 },
+            { t: CardCatalog.CROSS,    count: 7 }
+        ];
+        const barricades = [
             { t: CardCatalog.BARRICADE, count: 6 }
         ];
-        this.cards = [];
-        pool.forEach(i => {
-            for (let c = 0; c < i.count; c++) this.cards.push(new Card(i.t));
+
+        let pathPool = [];
+        buildCards.forEach(i => {
+            for (let c = 0; c < i.count; c++) pathPool.push(new Card(i.t));
         });
-        
-        for (let i = this.cards.length - 1; i > 0; i--) {
+
+        // Embaralha as peças de caminho
+        for (let i = pathPool.length - 1; i > 0; i--) {
             const j = Math.floor(Math.random() * (i + 1));
-            [this.cards[i], this.cards[j]] = [this.cards[j], this.cards[i]];
+            [pathPool[i], pathPool[j]] = [pathPool[j], pathPool[i]];
         }
-        this.hand = [];
-        this.replenish();
+
+        // Garante que a mão inicial receba 3 peças de construção (sem barricada imediata)
+        this.hand = [pathPool.pop(), pathPool.pop(), pathPool.pop()];
+
+        // Adiciona as 6 barricadas ao restante do monte e embaralha tudo junto
+        let remainingDeck = [...pathPool];
+        barricades.forEach(i => {
+            for (let c = 0; c < i.count; c++) remainingDeck.push(new Card(i.t));
+        });
+
+        for (let i = remainingDeck.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [remainingDeck[i], remainingDeck[j]] = [remainingDeck[j], remainingDeck[i]];
+        }
+
+        this.cards = remainingDeck;
     }
     replenish() {
         while (this.hand.length < 3 && this.cards.length > 0) {
@@ -954,7 +954,7 @@ class Deck {
 }
 
 /**
- * CONTROLADOR PRINCIPAL COM SUPORTE A SOLO, MULTIPLAYER E HOST
+ * CONTROLADOR PRINCIPAL
  */
 const App = {
     mode: 'SOLO',
