@@ -108,7 +108,7 @@
         }
         .btn-wood:hover { filter: brightness(1.15); }
 
-        /* FAIXA INDICADORA DE TURNO */
+        /* FAIXA DE TURNO */
         #turn-banner {
             padding: 4px 8px;
             text-align: center;
@@ -139,7 +139,7 @@
             to { background-color: #2d6a4f; }
         }
 
-        /* VIEWPORT E CÂMERA LIVRE */
+        /* VIEWPORT DO TABULEIRO */
         #viewport {
             flex: 1 1 auto;
             min-height: 0;
@@ -201,7 +201,7 @@
             border: 1px dashed rgba(231, 111, 81, 0.4);
         }
 
-        /* CONTROLES FLUTUANTES DO MAPA */
+        /* CONTROLES DE ZOOM */
         .map-controls {
             position: absolute;
             right: 10px;
@@ -231,7 +231,7 @@
 
         .btn-map:active { transform: scale(0.92); background: #3d2112; }
 
-        /* PAINEL LATERAL DE JOGADORES (DRAWER) */
+        /* GAVETA LATERAL DE JOGADORES */
         .drawer-backdrop {
             position: fixed;
             inset: 0;
@@ -243,10 +243,7 @@
             transition: opacity 0.3s ease;
         }
 
-        .drawer-backdrop.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
+        .drawer-backdrop.active { opacity: 1; pointer-events: auto; }
 
         .players-drawer {
             position: fixed;
@@ -308,7 +305,6 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            transition: all 0.2s ease;
         }
 
         .player-item.turn-active {
@@ -317,21 +313,11 @@
             box-shadow: 0 0 10px rgba(42, 157, 143, 0.4);
         }
 
-        .player-info {
-            display: flex;
-            flex-direction: column;
-        }
+        .player-info { display: flex; flex-direction: column; }
 
-        .player-name {
-            font-size: 0.85rem;
-            font-weight: bold;
-            color: #fff;
-        }
+        .player-name { font-size: 0.85rem; font-weight: bold; color: #fff; }
 
-        .player-role {
-            font-size: 0.65rem;
-            color: var(--gold-bright);
-        }
+        .player-role { font-size: 0.65rem; color: var(--gold-bright); }
 
         .badge-turn {
             background: #2a9d8f;
@@ -473,6 +459,7 @@
 </head>
 <body>
 
+    <!-- CABEÇALHO -->
     <header>
         <div class="header-title">
             <h1 id="ui-game-mode-title">Policia</h1>
@@ -487,8 +474,8 @@
                 <span id="ui-deck-count" class="stat-value" style="color:#70e000;">66</span>
             </div>
             <div class="stat-item">
-                <span class="stat-label">SALA</span>
-                <span id="ui-room-code" class="stat-value" style="font-size:0.75rem;">ClariFaz8</span>
+                <span class="stat-label">SALA / MODO</span>
+                <span id="ui-room-code" class="stat-value" style="font-size:0.75rem;">Solo</span>
             </div>
         </div>
         <div class="header-buttons">
@@ -497,8 +484,10 @@
         </div>
     </header>
 
+    <!-- FAIXA DE TURNO -->
     <div id="turn-banner" class="waiting-turn">Carregando...</div>
 
+    <!-- PAINEL LATERAL DE JOGADORES -->
     <div id="drawer-backdrop" class="drawer-backdrop" onclick="App.togglePlayersDrawer()"></div>
     <div id="players-drawer" class="players-drawer">
         <div class="drawer-header">
@@ -508,6 +497,7 @@
         <ul id="players-list" class="players-list"></ul>
     </div>
 
+    <!-- VIEWPORT COM CÂMERA -->
     <main id="viewport">
         <div id="board-container">
             <div id="board-grid"></div>
@@ -520,6 +510,7 @@
         </div>
     </main>
 
+    <!-- MÃO E CONTROLES -->
     <footer>
         <button id="btn-rotate" class="btn-rotate" onclick="App.rotateSelected()" disabled>
             ↻ Girar <span id="ui-rotation">(0°)</span>
@@ -527,26 +518,29 @@
         <div id="hand-slots" class="hand-container"></div>
     </footer>
 
-    <!-- MODAL 1: MENU PRINCIPAL -->
+    <!-- MODAL 1: MENU PRINCIPAL COM 3 MODOS -->
     <div id="menu-modal" class="modal">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:6px;">Policia - Fuga do Cânion</h2>
             <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:16px;">Como você deseja jogar hoje?</p>
 
-            <button class="btn-wood" style="width:100%; padding:12px; margin-bottom:10px; font-size:0.95rem;" onclick="App.showSoloConfig()">
-                🤠 Jogar Sozinho (vs Robô Xerife)
+            <button class="btn-wood" style="width:100%; padding:11px; margin-bottom:8px; font-size:0.9rem;" onclick="App.showSoloConfig(false)">
+                🤠 Modo Solo (Solitário - Sem IA)
             </button>
-            <button class="btn-wood" style="width:100%; padding:12px; font-size:0.95rem; background:linear-gradient(180deg, #2a9d8f 0%, #1e6b61 100%);" onclick="App.showMultiplayerLobby()">
-                👥 Jogar em Grupo (Online com Amigos)
+            <button class="btn-wood" style="width:100%; padding:11px; margin-bottom:8px; font-size:0.9rem; background:linear-gradient(180deg, #b06530 0%, #6e3c1d 100%);" onclick="App.showSoloConfig(true)">
+                🤖 Modo Solo + Robô (Com IA)
+            </button>
+            <button class="btn-wood" style="width:100%; padding:11px; font-size:0.9rem; background:linear-gradient(180deg, #2a9d8f 0%, #1e6b61 100%);" onclick="App.showMultiplayerLobby()">
+                👥 Modo Multiplayer (Online em Grupo)
             </button>
         </div>
     </div>
 
-    <!-- MODAL 2: CONFIGURAÇÃO DO MODO SOLO -->
+    <!-- MODAL 2: CONFIGURAÇÃO DO MODO SOLO (PURO OU BOT) -->
     <div id="solo-modal" class="modal hidden">
         <div class="modal-content">
-            <h2 style="color:var(--gold-text); margin-bottom:8px;">Modo Solo</h2>
-            <p style="color:#d1bfa9; font-size:0.85rem; margin-bottom:12px;">Você jogará em dupla cooperativa contra a Inteligência Artificial!</p>
+            <h2 id="solo-modal-title" style="color:var(--gold-text); margin-bottom:8px;">Modo Solo</h2>
+            <p id="solo-modal-desc" style="color:#d1bfa9; font-size:0.85rem; margin-bottom:12px;">Configure sua partida:</p>
 
             <label style="font-size:0.75rem; color:#a8947e; font-weight:bold;">SEU NOME / APELIDO:</label>
             <input id="inp-solo-name" class="input-box" type="text" value="Princesa da familia Lira" maxlength="25">
@@ -589,7 +583,7 @@
         </div>
     </div>
 
-    <!-- MODAL 4: SALA DE ESPERA / APROVAÇÃO -->
+    <!-- MODAL 4: SALA DE ESPERA -->
     <div id="waiting-approval-modal" class="modal hidden">
         <div class="modal-content">
             <h2 style="color:var(--gold-text); margin-bottom:8px;">Aguardando Aprovação</h2>
@@ -924,7 +918,7 @@ class Deck {
 }
 
 const App = {
-    mode: 'SOLO',
+    mode: 'SOLO_PURE', // 'SOLO_PURE', 'SOLO_BOT' ou 'MULTI'
     board: null,
     deck: null,
     aiDeck: null,
@@ -941,6 +935,7 @@ const App = {
     pendingJoinRequest: null,
     lastActivityTime: Date.now(),
     inactivityInterval: null,
+    soloWithBot: false,
 
     init() {
         this.board = new Board();
@@ -998,7 +993,7 @@ const App = {
             li.innerHTML = `
                 <div class="player-info">
                     <span class="player-name">${isHost ? '👑 ' : ''}${p.name} ${isMe ? '(Você)' : ''}</span>
-                    <span class="player-role">${isHost ? 'Xerife Líder' : 'Companheiro de Patrulha'}</span>
+                    <span class="player-role">${isHost ? 'Xerife Líder' : (p.id === 'p_bot' ? 'Assistente Robô' : 'Companheiro de Patrulha')}</span>
                 </div>
                 ${isTurn ? '<span class="badge-turn">Sua Vez</span>' : ''}
             `;
@@ -1037,8 +1032,20 @@ const App = {
         document.getElementById('menu-modal').classList.remove('hidden');
     },
 
-    showSoloConfig() {
+    showSoloConfig(withBot) {
+        this.soloWithBot = withBot;
         this.hideAllModals();
+        const title = document.getElementById('solo-modal-title');
+        const desc = document.getElementById('solo-modal-desc');
+
+        if (withBot) {
+            title.innerText = 'Modo Solo + Robô';
+            desc.innerText = 'Você jogará em dupla cooperativa contra a Inteligência Artificial!';
+        } else {
+            title.innerText = 'Modo Solo (Solitário)';
+            desc.innerText = 'Você jogará 100% sozinho, administrando o baralho inteiro!';
+        }
+
         document.getElementById('solo-modal').classList.remove('hidden');
     },
 
@@ -1061,20 +1068,30 @@ const App = {
     startSolo(difficulty) {
         const name = document.getElementById('inp-solo-name').value.trim() || 'Princesa da familia Lira';
         this.playerName = name;
-        this.mode = 'SOLO';
         this.myPlayerId = 'p_human';
-        this.players = [
-            { id: 'p_human', name: this.playerName },
-            { id: 'p_bot', name: 'Robô Xerife' }
-        ];
         this.currentTurnIndex = 0;
 
-        document.getElementById('ui-game-mode-title').innerText = 'Policia (Solo)';
-        document.getElementById('ui-room-code').innerText = 'Solo';
-        this.hideAllModals();
+        if (this.soloWithBot) {
+            this.mode = 'SOLO_BOT';
+            this.players = [
+                { id: 'p_human', name: this.playerName },
+                { id: 'p_bot', name: 'Robô Xerife' }
+            ];
+            document.getElementById('ui-game-mode-title').innerText = 'Policia (Solo + IA)';
+            document.getElementById('ui-room-code').innerText = 'Solo + Robô';
+            this.aiDeck = new Deck();
+        } else {
+            this.mode = 'SOLO_PURE';
+            this.players = [
+                { id: 'p_human', name: this.playerName }
+            ];
+            document.getElementById('ui-game-mode-title').innerText = 'Policia (Solo)';
+            document.getElementById('ui-room-code').innerText = 'Solo';
+            this.aiDeck = null;
+        }
 
+        this.hideAllModals();
         this.init();
-        this.aiDeck = new Deck();
 
         if (difficulty === 6) {
             this.board.place(-1, 0, new Card(CardCatalog.JAIL_6_L, 0));
@@ -1412,9 +1429,7 @@ const App = {
         if (this.board.isValidPlacement(card, { x, y }, this.rotation)) {
             Sound.playTap();
             
-            // Captura a rotação antes de resetar para 0
             const placedRotation = this.rotation;
-            
             this.board.place(x, y, new Card(card.template, placedRotation));
             this.deck.use(this.selectedIdx);
             this.cardsPlaced++;
@@ -1435,7 +1450,8 @@ const App = {
             this.renderAll();
             this.checkGameEnd();
 
-            if (this.mode === 'SOLO' && this.players[this.currentTurnIndex].id === 'p_bot') {
+            // Ativa o robô apenas se estiver no modo Solo + Robô
+            if (this.mode === 'SOLO_BOT' && this.players[this.currentTurnIndex].id === 'p_bot') {
                 setTimeout(() => this.playAITurn(), 1000);
             }
         }
@@ -1561,7 +1577,10 @@ const App = {
         const banner = document.getElementById('turn-banner');
         const activeName = this.getCurrentTurnPlayerName();
 
-        if (this.isMyTurn()) {
+        if (this.mode === 'SOLO_PURE') {
+            banner.className = 'my-turn';
+            banner.innerText = `⭐ SUA VEZ (${this.playerName})! Escolha uma carta e planeje a captura.`;
+        } else if (this.isMyTurn()) {
             banner.className = 'my-turn';
             banner.innerText = `⭐ SUA VEZ (${this.playerName})! Toque em 1 carta e posicione na mesa.`;
         } else {
