@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Policia - Fuga do Cânion</title>
+    <!-- Biblioteca MQTT moderna para conexão em tempo real -->
     <script src="https://unpkg.com/mqtt@5.3.5/dist/mqtt.min.js"></script>
     <style>
         :root {
@@ -41,6 +42,7 @@
             font-family: 'Georgia', serif;
         }
 
+        /* CABEÇALHO */
         header {
             background: linear-gradient(180deg, #3d2213 0%, #201108 100%);
             border-bottom: 2px solid #140a05;
@@ -106,6 +108,7 @@
         }
         .btn-wood:hover { filter: brightness(1.15); }
 
+        /* FAIXA INDICADORA DE TURNO */
         #turn-banner {
             padding: 4px 8px;
             text-align: center;
@@ -136,6 +139,7 @@
             to { background-color: #2d6a4f; }
         }
 
+        /* VIEWPORT E CÂMERA LIVRE */
         #viewport {
             flex: 1 1 auto;
             min-height: 0;
@@ -197,6 +201,7 @@
             border: 1px dashed rgba(231, 111, 81, 0.4);
         }
 
+        /* CONTROLES FLUTUANTES DO MAPA */
         .map-controls {
             position: absolute;
             right: 10px;
@@ -226,6 +231,7 @@
 
         .btn-map:active { transform: scale(0.92); background: #3d2112; }
 
+        /* PAINEL LATERAL DE JOGADORES (DRAWER) */
         .drawer-backdrop {
             position: fixed;
             inset: 0;
@@ -336,6 +342,7 @@
             border-radius: 4px;
         }
 
+        /* PAINEL INFERIOR: MÃO DE CARTAS */
         footer {
             background: linear-gradient(0deg, #180e07 0%, #29160c 100%);
             border-top: 2px solid #140a05;
@@ -409,6 +416,7 @@
             pointer-events: none;
         }
 
+        /* MODAIS */
         .modal {
             position: fixed;
             inset: 0;
@@ -726,10 +734,10 @@ const CardCatalog = {
 class Card {
     constructor(template, rotation = 0) {
         this.template = template;
-        this.rotation = rotation;
+        this.rotation = Number(rotation) || 0;
     }
     getConnections() {
-        const steps = (this.rotation / 90) % 4;
+        const steps = (Math.round(this.rotation / 90) % 4 + 4) % 4;
         let c = { ...this.template.connections };
         for (let i = 0; i < steps; i++) {
             c = { top: c.left, right: c.top, bottom: c.right, left: c.bottom };
@@ -1194,7 +1202,6 @@ const App = {
             return;
         }
 
-        // Pré-validação imediata no cliente se as informações da sala existirem
         const roomInfo = this.activeRoomsMap.get(roomCode);
         if (roomInfo && roomInfo.playerNames && roomInfo.playerNames.includes(name.toLowerCase())) {
             alert(`O nome "${name}" já está em uso na sala "${roomCode}". Por favor, escolha outro apelido!`);
@@ -1256,7 +1263,6 @@ const App = {
             if (this.isHost()) {
                 const nameConflict = this.players.some(p => p.name.trim().toLowerCase() === msg.candidateName.trim().toLowerCase());
                 
-                // Rejeição AUTOMÁTICA do sistema sem alertar o Host
                 if (nameConflict) {
                     this.sendNetMessage('RESPONSE_JOIN', {
                         candidateId: msg.candidateId,
@@ -1267,7 +1273,6 @@ const App = {
                     return;
                 }
 
-                // Nome válido: abre solicitação normal de entrada
                 this.pendingJoinRequest = msg;
                 document.getElementById('ui-requesting-player-name').innerText = msg.candidateName;
                 document.getElementById('host-approval-modal').classList.remove('hidden');
@@ -1313,14 +1318,14 @@ const App = {
             this.board = new Board();
             msg.gridData.forEach(item => {
                 const t = CardCatalog[item.templateId];
-                if (t) this.board.place(item.x, item.y, new Card(t, item.rotation));
+                if (t) this.board.place(item.x, item.y, new Card(t, Number(item.rotation) || 0));
             });
             this.renderAll();
             this.updateUI();
         } else if (msg.type === 'PLAY_CARD_ACTION') {
             const t = CardCatalog[msg.templateId];
             if (t) {
-                this.board.place(msg.x, msg.y, new Card(t, msg.rotation));
+                this.board.place(msg.x, msg.y, new Card(t, Number(msg.rotation) || 0));
                 this.cardsPlaced++;
                 this.currentTurnIndex = msg.nextTurnIndex;
                 Sound.playTap();
@@ -1406,7 +1411,11 @@ const App = {
 
         if (this.board.isValidPlacement(card, { x, y }, this.rotation)) {
             Sound.playTap();
-            this.board.place(x, y, new Card(card.template, this.rotation));
+            
+            // Captura a rotação antes de resetar para 0
+            const placedRotation = this.rotation;
+            
+            this.board.place(x, y, new Card(card.template, placedRotation));
             this.deck.use(this.selectedIdx);
             this.cardsPlaced++;
             this.selectedIdx = null;
@@ -1418,7 +1427,7 @@ const App = {
 
             if (this.mode === 'MULTI') {
                 this.sendNetMessage('PLAY_CARD_ACTION', {
-                    x, y, templateId: card.template.id, rotation: this.rotation, nextTurnIndex: nextTurn
+                    x, y, templateId: card.template.id, rotation: placedRotation, nextTurnIndex: nextTurn
                 });
             }
 
